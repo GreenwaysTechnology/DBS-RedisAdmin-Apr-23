@@ -1,0 +1,182 @@
+				Redis
+.....................................................................................
+
+  
+What is Redis ?
+   Redis is an open source(BSD licensed)/commericial,in-memory "data structure" store.
+
+What is Data Structure?
+  organization of data.
+Data structure is a pattern or policy to store,retrive,process data.
+
+Redis stores in data at low level data structure.
+
+Common Data structures:
+
+1.Arrays = List
+2.Set
+3.Stack
+4.LinkedList
+5.HashTable
+6.Map
+
+What is in-memory?
+ In-Memory means ram. Redis stores data in form of datastructure in Main memory(RAM).
+
+What is store?
+  Store means storage. - Data Store /Database....
+Storage Types:
+1.Persistent:
+    Disk Store
+       ->Structured 
+            -DBMS / RDBMS
+                -SQL - To send,read,process data from the disk.
+
+2.In Memory
+    Storing data inside RAM
+    Read data from RAM
+    Processing data from the ram.
+    storing data in cpu register.
+...................................................................................
+			Redis is NoSQL data store
+....................................................................................
+
+Relational Database introductions 
+Features of Relational Database.
+Impedance MisMatch..
+  Rise of Object oriented systems created a big gap between oo developers and databases.
+  Databases uses "SQL" language where as OO always models the domain as object.
+ As oo developer 
+   who must have deep knowledge in databases and also sql language.
+   who must write lot of boiler plate code.
+
+Database people who thought to store data into database => "Object oriented Databases" -Object Database
+In the begining , Object databases was popular later become less popular
+   due to low integration support with apps
+The developers who have created Frameworks to solve this problem - ORM frameworks
+..................................................................................
+			   Fall of Relational Database
+..................................................................................
+
+Rise of Internet
+  Web apps trying connect database where we had single database instance which was ready to support "conncurrent users"
+
+Introduction of scalablity:
+  Database vendors added more database machines in order to imporve user experience and performance.
+ In the begining who added more machines only which is called "vertical scability"
+
+Relational databases was not ready for clusters
+
+
+Google and Amazon their own data storage led new ideas related to data storages
+
+=> Bigtable - google
+=> Dynaamo - Amazon
+
+What is meaning of NOSQL?
+
+In early 2009, Johan Oskarsson organized an event to discuss “open source distributed, nonrelational databases,” during which he and a friend coined the term NoSQL (not SQL). The acronym attempted to label the emergence of an increasing number of nonrelational, distributed data stores, including open source clones of Google’s BigTable/MapReduce and Amazon’s Dynamo.
+
+We cant give exact meaning of nosql but we can define some common characteristics
+
+.....................................................................................
+
+Data Models:
+
+In SQL, data models are represented as tables(columns-rows) with relation ship using primary key-forigen key...
+
+Types of Data Models in NoSQL:
+
+1.key-value
+2.Docoment based
+3.Column based
+4.Graph based -connected nodes
+.....................................................................................
+			 Aggregation
+....................................................................................
+Data aggregation summarize data from multiple sources.
+It refers to the the process by which entites are coimbined to form a single meaningfull entity.
+...................................................................................
+			 Redis storage Model
+...................................................................................
+
+Redis is key-value store model by default.
+
+key is identifier ,value can be a data structure..
+.....................................................................................
+			  Redis Common Architecture
+.....................................................................................
+
+What is redis?
+  Redis is simple c program.
+
+Program types:
+1.passive program
+    source code / object code which is in hard disk.
+2.active program
+    When the compiled program is loaded into main memory, it becomes active program.
+ =>Active program is called as "Process"
+ =>Every process has its own memory address
+ =>Every process is managed by os.
+  
+=>Redis is a process which hosts datastore.
+....................................................................................
+				Redis setup
+....................................................................................
+
+Mode of Redis distribution:
+
+1.OpenSource - redis.io
+2.Commericial - redislabs -https://redis.com/
+
+Redis platform:
+
+=>Redis is only officially available on unix,linux,bsd versions
+=>Redis is not avaibale for windows
+=>Redis is available via containers like dockers
+   Using docker you can spin redis inside windows.
+
+
+Redis software distribution
+
+=>source code : build from source
+=>binary distribution
+
+Install Redis from Source :Linux
+..................................
+
+Steps:
+sudo apt-get update
+wget https://download.redis.io/redis-stable.tar.gz
+tar -xzvf redis-stable.tar.gz
+cd redis-stable
+make
+
+after running make , if you get error like below
+
+ make
+Command 'make' not found, but can be installed with:
+sudo apt install make        # version 4.3-4.1build1, or
+sudo apt install make-guile  # version 4.3-4.1build1
+
+..
+We need to run the command
+sudo apt install make
+sudo apt install make-guile
+
+  
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
