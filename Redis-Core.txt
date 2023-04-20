@@ -127,7 +127,7 @@ Program types:
 Mode of Redis distribution:
 
 1.OpenSource - redis.io
-2.Commericial - redislabs -https://redis.com/
+2.Commericial/Enterprise - redislabs -https://redis.com/
 
 Redis platform:
 
@@ -135,6 +135,7 @@ Redis platform:
 =>Redis is not avaibale for windows
 =>Redis is available via containers like dockers
    Using docker you can spin redis inside windows.
+
 
 
 Redis software distribution
@@ -164,8 +165,288 @@ We need to run the command
 sudo apt install make
 sudo apt install make-guile
 
-  
+...................................................................................
+			  Files and folders
+...................................................................................
  
+src
+ - source code files - .h and .c files
+ - complied binary files -  redis-server...
+deps
+   - contains compilers for compiling redis distribution...
+tests
+   -contains test related files
+utils
+   -utility files to setup
+       -cluster setup
+       -hyperloglog setup
+       -lru setup
+     etc....
+
+redis-conf
+   This is sole of redis server which contains all the parameters and configuration.
+....................................................................................
+				Redis tools
+....................................................................................
+
+-Redis server
+    -default host : local host
+    -default port : 6379
+mode:
+   standalone mode - default mode
+   distributed(cluster mode)
+
+Client tools
+  The clients which can be talked to redis server
+ -Redis cli -redis-cli
+    =>commandline tool 
+	1.for operting commands to send data ,reterive data
+    	2.For administration
+ 
+ -Programming languages
+   java,C#,node.js,python....
+
+Lab:
+ How to start redis server and How to communicate via redis cli?
+
+src/redis-server
+
+You requested maxclients of 10000 requiring at least 10032 max file descriptors
+
+What is file Descriptor?
+  It is simple c program which is used to bridge between applications and io devices
+
+How to communicate redis server?
+ redis-cli
+
+src/redis-cli
+127.0.0.1:6379> PING
+PONG
+127.0.0.1:6379> PING Hello Redis
+(error) ERR wrong number of arguments for 'ping' command
+127.0.0.1:6379> PING HelloRedis
+"HelloRedis"
+127.0.0.1:6379>
+
+Redis cli /Client commmunicates Redis server via sending commands.
+
+HTTP:
+ GET-command
+ GET /api/resource(identifier to execute some code)
+
+Redis
+  Command With Parameter | Without Parameter
+  PING 
+  PING "Hello"
+
+Redis cli sends request(IO) to redis server, where redis receives the request(command) and execute
+
+in C
+  
+  char* ping(char* args){
+      return args
+  }
+
+  ping("Hello")
+
+.....................................................................................				 Redis-client server communication protocal
+.....................................................................................
+
+RESP protocal: Redis serialization Protocal:
+................................................
+
+Redis clients uses a protocal called RESP with redis server.
+RESP was designed for Redis specifically.
+
+RESP protocal takes commands as input and send to server , server will those commands
+it returns reponse.
+Response would be immediate or delay(async response)
+RESP can seralize different data types like int,strings,and arrays..
+
+Server will deseralize the commands and execute them..
+
+"hello" => "xy893"
+RESP converts commands into binary format.
+
+RESP is used only client-server (redis-cli/java/c) ----Redis Server
+In cluster env(distributed env) nodes communication never happens via RESP
+
+Network Layer:
+..............
+ A client connects to Redis server by creating a TCP Connection to the port 6379.
+RESP works with TCP
+
+Request - Response:
+   
+=>Redis clients sends commands  with different args(request),once the command is received, its processed and reply(response) is sent back to the client.
+
+=>Redis in general sends only one command at time
+=>if you want to send multiple commands at once, Redis supports "Pipelining"
+=>if you use Redis as "Pub-Sub" Server,the protocal changes semantics and becomes a   push protocal,the client no longer require sending commands because the server will   automatically send new messages to the client
+
+....................................................................................
+				How to adminstre redis server
+.....................................................................................
+
+=>any configuration is needed before server setup.
+   you can edit redis-conf file
+=>While server is running, you can send commands(admin commands)
+=>while server startup we can pass command line parameters
+
+Server running mode:
+
+1.log mode
+
+src/redis-server
+90:C 20 Apr 2023 18:28:49.135 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+90:C 20 Apr 2023 18:28:49.135 # Redis version=7.0.11, bits=64, commit=00000000, modified=0, pid=90, just started
+90:C 20 Apr 2023 18:28:49.135 # Warning: no config file specified, using the default config. In order to specify a config file use src/redis-server /path/to/redis.conf
+90:M 20 Apr 2023 18:28:49.136 # You requested maxclients of 10000 requiring at least 10032 max file descriptors.
+90:M 20 Apr 2023 18:28:49.136 # Server can't set maximum open files to 10032 because of OS error: Operation not permitted.
+90:M 20 Apr 2023 18:28:49.136 # Current maximum open files is 4096. maxclients has been reduced to 4064 to compensate for low ulimit. If you need higher maxclients increase 'ulimit -n'.
+90:M 20 Apr 2023 18:28:49.136 * monotonic clock: POSIX clock_gettime
+                _._
+           _.-``__ ''-._
+      _.-``    `.  `_.  ''-._           Redis 7.0.11 (00000000/0) 64 bit
+  .-`` .-```.  ```\/    _.,_ ''-._
+ (    '      ,       .-`  | `,    )     Running in standalone mode
+ |`-._`-...-` __...-.``-._|'` _.-'|     Port: 6379
+ |    `-._   `._    /     _.-'    |     PID: 90
+  `-._    `-._  `-./  _.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |           https://redis.io
+  `-._    `-._`-.__.-'_.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |
+  `-._    `-._`-.__.-'_.-'    _.-'
+      `-._    `-.__.-'    _.-'
+          `-._        _.-'
+
+
+2.
+              `-.__.-'
+
+90:M 20 Apr 2023 18:28:49.137 # Server initialized
+90:M 20 Apr 2023 18:28:49.137 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+90:M 20 Apr 2023 18:28:49.138 * Loading RDB produced by version 7.0.11
+90:M 20 Apr 2023 18:28:49.138 * RDB age 80611 seconds
+90:M 20 Apr 2023 18:28:49.138 * RDB memory usage when created 0.60 Mb
+90:M 20 Apr 2023 18:28:49.138 * Done loading RDB, keys loaded: 0, keys expired: 0.
+90:M 20 Apr 2023 18:28:49.138 * DB loaded from disk: 0.000 seconds
+90:M 20 Apr 2023 18:28:49.138 * Ready to accept connections
+
+
+The default log location is standard output device
+This has been mentioned in the redis-conf file
+
+# Specify the log file name. Also the empty string can be used to force
+# Redis to log on the standard output. Note that if you use standard
+# output for logging but daemonize, logs will be sent to /dev/null
+logfile ""
+
+2.Back ground mode
+
+redis-conf
+	
+# By default Redis does not run as a daemon. Use 'yes' if you need it.
+# Note that Redis will write a pid file in /var/run/redis.pid when daemonized.
+# When Redis is supervised by upstart or systemd, this parameter has no impact.
+daemonize no
+
+Editing redis-conf file and start server:
+.........................................
+
+src/redis-server  redis.conf
+src/redis-cli
+127.0.0.1:6379> PING
+PONG
+127.0.0.1:6379>
+
+How to shutdown redis-server?
+
+=>if it is running log  mode , you can use ctrl+c key
+=>if it is running log mode or demon mode, you can shutdown via redis-cli 
+  by sending "shutdown" command
+....................................................................................
+
+How to start redis server with commandline parameters?
+
+ -port
+ -daemonize
+
+src/redis-server --daemonize yes 
+
+How to start redis server with redis.conf and command line parameters
+
+src/redis-server redis.conf --daemonize no
+
+Here what ever values in the redis.conf can be overriden by command line parameters.
+....................................................................................
+How to change default port?
+
+=>edit redis.conf 
+port 6380
+=>via commandline parameter
+src/redis-server --daemonize no --port 6380
+
+
+How to connect redis server via redis cli?
+
+redis cli always connects with port 6379 and host is "localhost"
+> src/redis-cli
+>
+if port or host is changed or updated , we need to pass parameter
+
+>src/redis-cli -p 6380 -h myhost
+....................................................................................
+				Redis Stroage Structrure
+...................................................................................
+
+Relational databases stores data in the disk file.
+
+Redis stores data in the main Memory- RAM
+
+Redis has logic storage within redis process/instance called "redis keyspace(database)"
+
+By default a every redis process has 16 key-space(databases), which has been defined in the redis conf file
+
+redis.conf
+# Set the number of databases. The default database is DB 0, you can select
+# a different one on a per-connection basis using SELECT <dbid> where
+# dbid is a number between 0 and 'databases'-1
+databases 16
+
+Even though we have 16 database ,it is not recommened to spilt data and store into different different databases.
+Redis databases are not scalable in cluster env.
+Databases are numbered from database-0 to 15.
+Default database is 0.
+
+
+Use case :How select database and insert data into database and reterive?
+
+ src/redis-cli -p 6380
+127.0.0.1:6380> SELECT 1
+OK
+127.0.0.1:6380[1]> SELECT 0
+OK
+127.0.0.1:6380> SET id 1
+OK
+127.0.0.1:6380> GET id
+"1"
+127.0.0.1:6380> SET id 1
+OK
+127.0.0.1:6380> SELECT 1
+OK
+127.0.0.1:6380[1]> GET id
+(nil)
+127.0.0.1:6380[1]> SELECT 0
+OK
+127.0.0.1:6380> GET id
+"1"
+
+
+
+
 
 
 
