@@ -422,7 +422,7 @@ Databases are numbered from database-0 to 15.
 Default database is 0.
 
 
-Use case :How select database and insert data into database and reterive?
+Use case :How select to database and insert data into database and reterive?
 
  src/redis-cli -p 6380
 127.0.0.1:6380> SELECT 1
@@ -433,8 +433,6 @@ OK
 OK
 127.0.0.1:6380> GET id
 "1"
-127.0.0.1:6380> SET id 1
-OK
 127.0.0.1:6380> SELECT 1
 OK
 127.0.0.1:6380[1]> GET id
@@ -443,6 +441,290 @@ OK
 OK
 127.0.0.1:6380> GET id
 "1"
+....................................................................................
+			Data Models
+.....................................................................................
+
+In RDBMS data is stored in tables 
+Table is collection of rows and columns
+
+row contains data
+column contains identifer
+
+id  name        course 
+1   subramanian redis
+
+Every column is just like variable having datatypes
+ varchar,number,int,boolean,....
+
+Redis stores data(value) as key value pair.
+
+Key-Value pair is also datastructure
+ =>Dictionary | hash table | Map.
+
+What is Key ? What can be key?
+
+=>Key is unique inditifier to inditify value.
+=>Key is binary safe string
+=>Key can be "string" eg "name" or numerical value eg 1 or ""
+=>Key size must be normal which should not be long or even very short
+=>Key naming convention would be "user:1:pics"
+   ->"object-type:id" eg user:id order:id payment:mode
+=>Key also takes memeory which max size is 512 MB 
+
+Value:
+  Value is represented by datatypes.
+
+=>Strings
+=>List
+=>Set
+=>Sorted Set
+=>Hash
+=>Stream
+=>HyperLogLog
+=>Geospatial
+=>BitMaps
+=>BitFields
+...................................................................................
+
+Redis is key value pair which is used to store data. how redis is going to send data into server ,like rdbms we use sql statements - insert,select,update,remove
+
+Redis gives us commands to deal with data.
+
+Commands are classified according to data types and use case.
+
+Datatypes based commands are used for development.
+Other commands are used for "administration"
+
+Data Types based commands
+String:
+
+General Syntax:
+...............
+SET KEY VALUE -write
+GET KEY -read
+
+SET key value [NX | XX] [GET] [EX seconds | PX milliseconds |
+  EXAT unix-time-seconds | PXAT unix-time-milliseconds | KEEPTTL]
+
+Set key to hold the string value.
+if key already holds value,it is overriden,regardles what ever type.
+
+set command sends req via RESP protocal to redis server , redis server now executes that commands gives response "OK"
+
+127.0.0.1:6379> SET message "Hello"
+OK
+
+
+GET command:
+............
+
+GET key
+ Get the value of the key.
+if key present the value associated with key will be returned
+if no key present, it will return response "nil"
+
+127.0.0.1:6379> GET message
+"Hello"
+127.0.0.1:6379> GET name
+(nil)
+127.0.0.1:6379>
+
+eg:
+127.0.0.1:6379> SET name "Subramanian"
+OK
+127.0.0.1:6379> set city "Coimbatore"
+OK
+127.0.0.1:6379> set state "Tamil Nadu"
+O
+127.0.0.1:6379> get id
+"1"
+127.0.0.1:6379> get city
+"Coimbatore"
+127.0.0.1:6379> get state
+"Tamil Nadu"
+
+Key Naming Recommandation
+
+object-id:unique identifier:composedObject
+
+127.0.0.1:6379> SET user:1:comments "This is good"
+OK
+127.0.0.1:6379> SET user:2:comments "This very nice"
+OK
+127.0.0.1:6379> SET user:3:comments "This is very bad"
+OK
+
+keys are case senstive:
+ "user:1" is not equal to "USER:1"
+127.0.0.1:6379> SET user:1:comments "This is good"
+OK
+1
+127.0.0.1:6379> SET USER:1:COMMENTS "this is execellent"
+OK
+127.0.0.1:6379> GET USER:1:COMMENTS
+"this is execellent"
+127.0.0.1:6379> GET user:1:comments
+"This is good"
+
+How to update key value of existing keys?
+
+127.0.0.1:6379> SET USER:1:COMMENTS "this is most excellent"
+OK
+127.0.0.1:6379> GET USER:1:COMMENTS
+"this is most excellent"
+.....................................................................................
+				How to delete Keys?
+.....................................................................................
+
+There are two ways
+
+1.Manual deletion using "DEL" Command
+  DEL command deletes one or more keys..
+
+DEL Key key key
+
+Response:
+ integer : the number of keys removed
+
+127.0.0.1:6379> DEL USER:1:COMMENTS
+(integer) 1
+
+UNLINK:
+ => Which unlinks the key, hence the key will not exit(deleted)
+ =>The memory associated with the key value is reclaimed by an "Asynchronous process"
+   so unlink is non blocking"
+127.0.0.1:6379> SET profile:3:name "Ram"
+OK
+127.0.0.1:6379> GET profile:3:name
+"Ram"
+127.0.0.1:6379> UNLINK profile:3:name
+(integer) 1
+
+DEL VS UNLINK:
+ =>DEL is blocking command
+ =>UNLINK is non blocking command
+
+
+
+2.Auto delete : Key Expiring
+
+SET key value [EX seconds|PX milliseconds|KEEPTTL] [NX|XX] [GET]
+
+EX Seconds: set the expire time in seconds
+
+127.0.0.1:6379> SET profile:1:name "Subramanian Murugan" EX 1
+OK
+
+"Subramanian Murugan"
+127.0.0.1:6379> GET profile:1:name
+"Subramanian Murugan"
+127.0.0.1:6379> GET profile:1:name
+"Subramanian Murugan"
+127.0.0.1:6379> GET profile:1:name
+(nil)
+127.0.0.1:6379>
+.....................................................................................
+PX Millseconds
+127.0.0.1:6379> SET profile:1:name "Subramanian Murugan" PX 5000
+OK
+127.0.0.1:6379> GET profile:1:name
+"Subramanian Murugan"
+127.0.0.1:6379> GET profile:1:name
+"Subramanian Murugan"
+127.0.0.1:6379> GET profile:1:name
+(nil)
+...................................................................................
+
+Keys with options TTL(Time to Live):
+  PX-MS 
+  EX-SEC
+
+NX AND XX :
+
+NX : only set the key if it does not already exists -create new key and avoid update
+
+127.0.0.1:6379> SET profile:2:name "Krishna" NX
+OK
+127.0.0.1:6379> SET profile:2:name "Krishna" NX
+(nil)
+
+XX: ONLY for update
+127.0.0.1:6379> SET profile:2:name "Krishna" XX
+OK
+127.0.0.1:6379> SET profile:2:name "Krishna" XX
+OK
+127.0.0.1:6379> SET profile:3:name "Suman" XX
+(nil)
+.....................................................................................
+			 How to get Complete keys?
+....................................................................................
+
+=>Keys pattern
+=>scan pattern
+
+Keys Pattern:
+  =>returns all key matching pattern
+ pattern style would be "glob-style"
+
+Pattern syntax:
+* => Get all the keys
+127.0.0.1:6379> KEYS *
+1) "user:3:comments"
+2) "user:1:comments"
+3) "message"
+4) "user:2:comments"
+5) "id"
+6) "city"
+7) "state"
+8) "profile:2:name"
+9) "name"
+
+h?llo => matches hello,hallo and hxello
+127.0.0.1:6379> Keys  m?essage
+(empty array)
+127.0.0.1:6379> Keys  m?ssage
+1) "message"
+127.0.0.1:6379> Keys  u?er
+(empty array)
+127.0.0.1:6379> Keys  u?er:1:comments
+1) "user:1:comments"
+127.0.0.1:6379> Keys  m??sage
+1) "message"
+127.0.0.1:6379> Keys  m????
+(empty array)
+127.0.0.1:6379> Keys  m??
+(empty array)
+127.0.0.1:6379> Keys  m?
+(empty array)
+127.0.0.1:6379> Keys  ??
+1) "id"
+127.0.0.1:6379> Keys  ????
+1) "city"
+2) "name"
+127.0.0.1:6379>
+
+h*ello => matches hllo and heeeeello
+h[ae] => matches hello and hallo but not hillo
+h[^e]=>matches hallo,hbllo,but not hello
+h[a-b] =>matches hallo and hbllo
+..................................................................................
+scan command used to query keys async ways with pattern
+
+scan iterates the set of keys in the currently redis database
+
+Scan vs Keys:
+ Scan is non blocking/async 
+ Keys are blocking command
+ Keys command not recommended for administration or even develop with large sets
+
+eg:
+SCAN cursor [MATCH pattern] [Count count] [Type type]
+
+SCAN is cursor based iterator.
+SCAN command for every call the server returns an updated cursor..
+
+
 
 
 
