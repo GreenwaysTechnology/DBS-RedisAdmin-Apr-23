@@ -724,13 +724,356 @@ SCAN cursor [MATCH pattern] [Count count] [Type type]
 SCAN is cursor based iterator.
 SCAN command for every call the server returns an updated cursor..
 
+Scan Basic Usage:
+..................
+=>Cursor default position 0 and terminates when the cursor returned by server is 0.
 
 
+127.0.0.1:6379> scan 0
+1) "30"
+2)  1) "user:3:comments"
+    2) "user:6:location"
+    3) "user:1:comments"
+    4) "user:10:location"
+    5) "message"
+    6) "profile:2:name"
+    7) "user:8:location"
+    8) "user:9:location"
+    9) "user:2:comments"
+   10) "user:1:location"
+
+=>"30" next cursor position
+
+127.0.0.1:6379> scan 30
+1) "0"
+2) 1) "city"
+   2) "name"
+   3) "state"
+   4) "user:4:location"
+   5) "user:7:location"
+   6) "id"
+   7) "user:5:location"
+   8) "user:2:location"
+   9) "user:3:location"
+
+Note : 
+ The number of elements returned is not gurantee when each time we start scanning.
 
 
+If you want to restrict how many keys we want.
+
+127.0.0.1:6379> scan 0 COUNT 2
+1) "12"
+2) 1) "user:3:comments"
+   2) "user:6:location"
+127.0.0.1:6379> scan 2 COUNT 2
+1) "22"
+2) 1) "message"
+   2) "profile:2:name"
+   3) "user:8:location"
+127.0.0.1:6379> scan 22 COUNT 2
+1) "14"
+2) 1) "user:9:location"
+   2) "user:2:comments"
+127.0.0.1:6379> scan 14 COUNT 2
+1) "25"
+2) 1) "user:1:location"
+   2) "city"
+   3) "name"
+
+Match:
+  Match option is used to filter keys
+
+127.0.0.1:6379> scan 25 COUNT 12 MATCH u*
+1) "0"
+2) 1) "user:4:location"
+   2) "user:7:location"
+   3) "user:5:location"
+   4) "user:2:location"
+   5) "user:3:location"
+127.0.0.1:6379> scan 0 COUNT 12 MATCH u*
+1) "25"
+2) 1) "user:3:comments"
+   2) "user:6:location"
+   3) "user:1:comments"
+   4) "user:10:location"
+   5) "user:8:location"
+   6) "user:9:location"
+   7) "user:2:comments"
+   8) "user:1:location"
+....................................................................................
+Data types:
+...........
+String
+ ->storing alphabets
+ ->storing numbers
+ ->storing binary
+no int,float,double datatypes
+Capacity: 512 mb for any string value.
+
+Jpeg,spreadsheets,html framments, as well as regular plain old strings and numbers.
+
+Internally redis stores encoding of the value.
+
+127.0.0.1:6379> SET player:name Aswin
+OK
+127.0.0.1:6379> SET player:avg 4.5
+OK
+127.0.0.1:6379> SET player:score 10
+
+INCR command:
+ Used to increment by 1 by default
+127.0.0.1:6379> INCR player:score
+(integer) 11
+127.0.0.1:6379> INCR player:score
+(integer) 12
+127.0.0.1:6379> INCR player:score
+(integer) 13
+127.0.0.1:6379> GET player:score
+
+INCRBY : INCREMENT BY seed value
+127.0.0.1:6379> INCRBY player:score 5
+(integer) 18
+127.0.0.1:6379> INCRBY player:score 5
+(integer) 23
+127.0.0.1:6379> INCRBY player:score 2
+(integer) 25
+127.0.0.1:6379> INCRBY player:score 3
+(integer) 28
+127.0.0.1:6379> INCRBY player:score 1
+
+INCRBYFloat: INCRMENT by floating points
+127.0.0.1:6379> INCRBYFLOAT player:avg  .5
+"5"
+127.0.0.1:6379> INCRBYFLOAT player:avg  .5
+"5.5"
+127.0.0.1:6379> INCRBYFLOAT player:avg  .5
+"6"
+127.0.0.1:6379> INCRBYFLOAT player:avg  .5
+"6.5"
+127.0.0.1:6379> INCRBYFLOAT player:avg  .5
+"7"
+127.0.0.1:6379> INCRBYFLOAT player:avg  1.5
+"8.5"
+127.0.0.1:6379> INCRBYFLOAT player:avg  4.5
+"13"
+127.0.0.1:6379> INCRBYFLOAT player:avg  .5
+"13.5"
+
+redis internally uses sub types
+-int -10
+float -4.5
+pics/any -byte[]
+....................................................................................
+Hash:
+.....
+HSET
+HGET
+
+Hashes are used to store collection of key-value pair.
+Hash stores many values under one key uses fields and field values
+
+KEY SINGLE VALUE
+KEY - Multiple key value pair - json,java hashmaps...
+
+Hashes are mutable datastructure, we can add,update,delete,increment fields
+Hashes are schema less , so that we can store any no of fields and values
+
+HSET key field value field value [field value....]
+
+player:1 //key
+   {
+	name:'xx' //field:value
+	score:89
+	status:'live' 
+   }
+commands:
+ HSET - to add field and value
+ HGETALL - to read all hash value
+ HGET - to get single key field vale
+ HSET - to update field and value
+ HDEL - to delete a field and value
+ HINCRBY - to increment a field value.
+
+127.0.0.1:6379> HSET player:1000  name aswin score 1000 status alive city chennai
+(integer) 4
+127.0.0.1:6379> HGETALL  player:1000
+1) "name"
+2) "aswin"
+3) "score"
+4) "1000"
+5) "status"
+6) "alive"
+7) "city"
+8) "chennai"
 
 
+127.0.0.1:6379> HGET player:1000 score
+"1000"
 
+Incrementing keys:
+7.0.0.1:6379> HINCRBY player:1000 score 1
+(integer) 1001
+127.0.0.1:6379> HINCRBY player:1000 score 1
+(integer) 1002
+127.0.0.1:6379> HINCRBY player:1000 score 1
+(integer) 1003
+127.0.0.1:6379> HGET player:1000 score
+"1003"
+
+To check to key existence:
+..........................
+(integer) 0
+127.0.0.1:6379> HEXISTS player:1000 position
+(integer) 0
+127.0.0.1:6379> HEXISTS player:1000 name
+(integer) 1
+
+Resp:
+ 1 means key is present
+ 0 means key is not present.
+
+To delete a key:
+27.0.0.1:6379> HDEL player:1000 name
+(integer) 1
+127.0.0.1:6379> HEXISTS player:1000 name
+...................................................................................
+				List
+.....................................................................................
+
+What is list?
+ stores sequence of items
+ [1,2,3,4,5,6]
+ Every list is dynamic array
+ 
+Position of the List
+1.head
+2.tail
+Left -------------->Right
+head---[1,2,3,4,5,6]--tail
+
+Based on List we can create other DataStructures
+1.Stack -Last in firstout
+ LPUSH
+ LPOP
+2.Queue - First in First out
+RPUSH
+LPOP
+
+127.0.0.1:6379> LPUSH namelist subramanian murugan karthik
+(integer) 3
+127.0.0.1:6379> LRANGE namelist 0 -1
+1) "karthik"
+2) "murugan"
+3) "subramanian"
+
+Get values based on Index:
+127.0.0.1:6379> LINDEX namelist 0
+"karthik"
+127.0.0.1:6379> LINDEX namelist 1
+"murugan"
+127.0.0.1:6379> LINDEX namelist 2
+"subramanian"
+127.0.0.1:6379> LINDEX namelist 3
+(nil)
+
+Delete items from left:
+127.0.0.1:6379> LPOP namelist
+"karthik"
+127.0.0.1:6379> LPOP namelist
+"murugan"
+127.0.0.1:6379> LPOP namelist
+"subramanian"
+127.0.0.1:6379> LPOP namelist
+(nil)
+
+How to add elements from right to left:
+127.0.0.1:6379> RPUSH player:scores 1 2 3 4 5
+(integer) 5
+127.0.0.1:6379> LRANGE player:scores 0 -1
+1) "1"
+2) "2"
+3) "3"
+4) "4"
+5) "5"
+127.0.0.1:6379>
+
+How to remove elements?
+127.0.0.1:6379> LPOP player:scores
+"2"
+127.0.0.1:6379> LPOP player:scores
+....................................................................................
+				Sets
+...................................................................................
+Set is Unordered collection without duplicate values.
+Set represents matmeticall set operations
+1.intersection
+2.difference
+3.union.
+
+SADD:
+127.0.0.1:6379> SADD players:oneline 1
+(integer) 1
+127.0.0.1:6379> SADD players:oneline 2
+(integer) 1
+127.0.0.1:6379> SADD players:oneline 3
+(integer) 1
+127.0.0.1:6379> SADD players:oneline 3
+(integer) 0
+
+here response would be 1 means success 
+0 means not affected - avoids duplicate values
+
+Get all the values from set:
+............................
+
+127.0.0.1:6379> SSCAN players:oneline 0
+1) "0"
+2) 1) "1"
+   2) "2"
+   3) "3"
+
+How many players online?
+
+SCARD:
+  Returns the set cardinality(number of elements) of the set stored at key.
+> SCARD players:oneline
+(integer) 3
+
+Union: eleminate common elements
+
+127.0.0.1:6379> SADD team1  a b c d e
+(integer) 5
+127.0.0.1:6379> SADD team2  f g a c b
+(integer) 5
+127.0.0.1:6379> SUNION team1 team2
+1) "f"
+2) "g"
+3) "a"
+4) "b"
+5) "c"
+6) "e"
+7) "d"
+.....................................................................................
+
+Advanced Data types:
+
+1.Bit fields:
+    You store 0 or 1 
+    you can set , increment values
+    you can store unsigned integers
+
+eg:
+ if you want to store keeping track of activity in an online game.
+ we can store value based on offset
+127.0.0.1:6379> BITFIELD  player:1:status SET u32 #0 100 
+....................................................................................
+Other Datastructures:
+1.Redis HyperLogLog
+2.Redis geospatial  to add geo cordinates
+3.Streams - sequence of events if you want to store like tmp,flight recordings,gaming position,vechicle movement position....
+.......................................&&&&&&&&&&&&&&&&&&&&&&........................
+   
 
 
 
