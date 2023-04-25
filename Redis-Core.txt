@@ -1074,9 +1074,14 @@ Other Datastructures:
 3.Streams - sequence of events if you want to store like tmp,flight recordings,gaming position,vechicle movement position....
 .......................................&&&&&&&&&&&&&&&&&&&&&&........................
    
+How to know the internal types of keys?
 
-
-
+27.0.0.1:6379> OBJECT ENCODING player:scroe
+(nil)
+127.0.0.1:6379> OBJECT ENCODING player:score
+"int"
+127.0.0.1:6379> OBJECT ENCODING player:1000
+"listpack"
 
 
 

@@ -1,0 +1,179 @@
+				Redis Persistence
+....................................................................................
+What is data persistence?
+
+ When something persists, it lasts. In the context of databases, that means you intend for a piece of information that is going to be saved in some way (in memory or on disk) for some period of time, so that it can be recovered even if a computer process is killed.
+
+With data persistence, existing data from an application stays intact between sessions, preserving it for use in a following application session without suffering data loss.
+
+Data persistence is particularly essential in the event of a server restart, because data stored only in-memory is gone when the power flickers.
+
+Redis and Persistence:
+......................
+
+Redis stores data primarily in "RAM".
+
+Redis offers two types of persistency
+
+=>Disk Persistency
+=>Diskless persistency / IN Mememory Persistency - Replication
+
+
+Disk Persistency:Data persistence options
+..........................................
+=>RDB(Redis database)
+=>AOF(Append only File)
+=>No Persistency :
+=>RDB + AOF
+
+
+Redis Enterprise/Redis is a fully durable database that serves all data directly from memory, using either RAM or Redis on Flash. With regards to persistent data, Redis only reads this data when both the primary and secondary shards in a high-availability database are lost.
+
+Redis supports append-only file data persistence (AOF) as well as snapshotting.
+
+Append-only file (AOF) data persistence:
+........................................
+Append-only file (AOF), is a logging mechanism that writes every write operation performed on the Redis database to a log file on disk.
+
+		 Data Persistence Storage with Durable Redis
+.....................................................................................
+What is data persistence?
+
+When something persists, it lasts. In the context of databases, that means you intend for a piece of information that is going to be saved in some way (in memory or on disk) for some period of time, so that it can be recovered even if a computer process is killed.
+With data persistence, existing data from an application stays intact between sessions, preserving it for use in a following application session without suffering data loss.
+Data persistence is particularly essential in the event of a server restart, because data stored only in-memory is gone when the power flickers
+
+Data persistence options
+........................
+
+Redis Enterprise/Redis is a fully durable database that serves all data directly from memory, using either RAM or Redis on Flash. With regards to persistent data, Redis only reads this data when both the primary and secondary shards in a high-availability database are lost.
+
+Redis supports append-only file data persistence (AOF) as well as snapshotting.
+It is also possible to use both RDB and AOF together, known as “hybrid persistence” to take advantage of the strengths of both options. 
+
+Lets dive into to each of the Redis data persistence options below with further explanation and more detailed information about the strengths and weaknesses of each.
+
+
+Append-only file (AOF) data persistence:
+........................................
+
+Append-only file (AOF), is a logging mechanism that writes every write operation performed on the Redis database to a log file on disk.  AOF is useful for preserving data durability, as the log file can be used to reconstruct the database in the event of a crash or failure. 
+
+AOF works by appending each write operation to the end of the log file, hence the name “Append-Only File.”  When Redis is restarted, it reads the log file and re-executes the write operations in the file to restore the database to its previous state.  
+
+AOF provides better data durability than the snapshot persistence option, which only creates point-in-time snapshots of data.  However, it is slower and requires more disk space, as it must write every write operation to the log file.
+
+The AOF file can be configured to be rewritten in the background when it gets too large, using a process called AOF fsync.  The ‘fsync’ configuration directive controls how often the AOF log file is synchronized to disk.  
+
+Every shard of a Redis database appends new lines to its persistent file in one of the following ways:
+
+every second (fast but less safe)
+every write (safer but slower)
+
+Snapshot:
+
+A snapshot is a point-in-time copy of the Redis data stored in memory. 
+
+Snapshots are created using the Redis DataBase (RDB) persistence option, which allows the state of the Redis database to be saved to disk at specified intervals.
+
+When an RDB snapshot is taken, Redis creates a child process to perform the snapshotting, allowing the main process to continue serving requests.
+
+Snapshots are useful for creating backups of the Redis database, as well as for migrating data between Redis instances.  They can be created manually using the ‘SAVE’ or ‘BGSAVE’ command, or automatically using the ‘save’ configuration directive in the Redis configuration file.  
+
+It is important to note that while snapshots allow the data in Redis to be persisted to disk, they do not provide the same level of data durability as the AOF persistence option.  AOF writes every write operation performed on the Redis database to a log file on disk, which can be used to reconstruct the database in the event of a crash or failure.  
+
+Snapshots vs. backups
+
+Snapshots and backup are designed for two different things. While snapshot supports data durability (i.e. to automatically recover data when there is no copy of the dataset in memory), backup supports disaster recovery (i.e. when the entire cluster needs to be rebuilt from scratch).
+
+Redis Backup and Restore:
+  In addition to data-persistence functionality, Redis Enterprise provides out-of-the-box support for backup and restore services.
+
+Backup
+Redis Enterprise allows you to backup a snapshot of your database (across all shards) to one of the major public cloud storage solutions (Amazon S3, Azure Blob Storage, or Google Cloud Storage) as well as FTP or Swift services. Before executing the snapshot, Redis Enterprise confirms that there are no outstanding requests in the cluster, thus ensuring consistency. This figure illustrates the backup process:
+
+Restore
+The restore process is useful in the following cases:
+
+If you have lost all in-memory copy (or copies) of your data as well as your data persistence files (Note: The likelihood of this scenario is very low if you have deployed Redis Enterprise in a multi-AZ manner with replication and data persistence enabled.)
+When you need to regress your dataset ()Note: In this case, you can seamlessly return to a previous point in time by creating a second database, importing data and switching endpoints once the data loading is complete. This ensures that you can continue to access your data even while the backup is being loaded.)
+
+Data Availability vs. Durability
+..................................
+
+Data durability refers to the ability of data to remain stored and accessible over a period of time, even in the face of various types of failures or disasters.  Data availability, on the other hand, refers to the ability of users to access and use the data when needed.  
+
+Data availability involves designing systems and processes that allow users to access and use the data when needed.  This can involve desinging systems with high uptime and fast response times, as well as implementing failover and load balancing mechanisms to ensure that the data is alaways available to users, even if some of the systems fail.
+
+For a data center, availability is an important metric as is durability. A data center will support persistence by using redundant storage systems, such as storage are networks (SANs) or network-attached storage (NAS) systems.  These systems provide multiple copies of data, so that if one copy becomes unavailable, there are other copies that can be accessed.
+
+Data persistence options 
+There are six options for persistence in Redis Enterprise Software:
+
+..............................................................................
+Options					Description
+..............................................................................
+
+None					Data is not persisted to disk at all.
+
+Append Only File (AoF) on every write	Data is fsynced to disk with every write.
+
+Append Only File (AoF) one second	Data is fsynced to disk every second.
+
+Snapshot every 1 hour			A snapshot of the database is created every 					        hour.
+Snapshot every 6 hours			A snapshot of the database is created 							every 6 hours.
+Snapshot every 12 hours			A snapshot of the database is created every 					        12 hours.
+
+Selecting a persistence strategy:
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+
+When selecting your persistence strategy, you should take into account your tolerance for data loss and performance needs.
+
+There will always be tradeoffs between the two. The fsync() system call syncs data from file buffers to disk. 
+
+You can configure how often Redis performs an fsync() to most effectively make tradeoffs between performance and durability for your use case.
+
+Redis supports three fsync policies: every write, every second, and disabled.
+
+Redis also allows snapshots through RDB files for persistence. Within Redis Enterprise, you can configure both snapshots and fsync policies.
+
+For any high availability needs, replication may also be used to further reduce any risk of data loss and is highly recommended.
+...................
+
+For use cases where data loss has a high cost:
+
+Append-only file (AOF) - Fsync every everywrite - Redis Enterprise sets the open-source Redis directive appendfsyncalways. With this policy, Redis will wait for the write and the fsync to complete prior to sending an acknowledgement to the client that the data has written. This introduces the performance overhead of the fsync in addition to the execution of the command. The fsync policy always favors durability over performance and should be used when there is a high cost for data loss.
+
+For use cases where data loss is tolerable only limitedly:
+
+Append-only file (AOF) - Fsync every 1 sec - Redis will fsync any newly written data every second. This policy balances performance and durability and should be used when minimal data loss is acceptable in the event of a failure. This is the default Redis policy. This policy could result in between 1 and 2 seconds worth of data loss but on average this will be closer to one second.
+
+For use cases where data loss is tolerable or recoverable for extended periods of time:
+
+Snapshot, every 1 hour - Sets a full backup every 1 hour.
+Snapshot, every 6 hour - Sets a full backup every 6 hours.
+Snapshot, every 12 hour - Sets a full backup every 12 hours.
+None - Does not backup or persist data at all.
+....................................................................................
+			Append-only file (AOF) vs snapshot (RDB) 
+....................................................................................
+
+Now that you know the available options, to assist in making a decision on which option is right for your use case, here is a table about the two:
+
+Append-only File (AOF)				Snapshot (RDB)
+.....................................................................
+1.More resource intensive			Less resource intensive
+
+2.Provides better durability
+(recover the latest point in time)		Less durable
+
+3.Slower time to recover (Larger files)		Faster recovery time
+
+4.More disk space required 
+(files tend to grow large 
+and require compaction)			    Requires less resource (I/O once 						            every several hours and no compaction 						    required)
+....................................................................................
+
+
+
+
