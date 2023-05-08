@@ -1,0 +1,184 @@
+start two redis instance 
+master 7001
+replica 7002
+
+
+master
+./src/redis-server redis.conf --port 7001
+
+role command to check the master status
+
+./src/redis-cli -p 7001
+127.0.0.1:7001> role
+1) "master"
+2) (integer) 0
+3) (empty array)
+127.0.0.1:7001>
+
+master
+0 -offset , because you have not written any data
+(empty array) - i have not started replicas yet
+
+replica start:
+./src/redis-server redis.conf --port 7002 --replicaof localhost 7001
+
+./src/redis-server --port 7002 --replicaof localhost 7001
+5124:C 03 May 2023 18:24:39.818 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+5124:C 03 May 2023 18:24:39.818 # Redis version=7.0.11, bits=64, commit=00000000, modified=0, pid=5124, just started
+5124:C 03 May 2023 18:24:39.818 # Configuration loaded
+5124:S 03 May 2023 18:24:39.819 # You requested maxclients of 10000 requiring at least 10032 max file descriptors.
+5124:S 03 May 2023 18:24:39.819 # Server can't set maximum open files to 10032 because of OS error: Operation not permitted.
+5124:S 03 May 2023 18:24:39.819 # Current maximum open files is 4096. maxclients has been reduced to 4064 to compensate for low ulimit. If you need higher maxclients increase 'ulimit -n'.
+5124:S 03 May 2023 18:24:39.819 * monotonic clock: POSIX clock_gettime
+                _._
+           _.-``__ ''-._
+      _.-``    `.  `_.  ''-._           Redis 7.0.11 (00000000/0) 64 bit
+  .-`` .-```.  ```\/    _.,_ ''-._
+ (    '      ,       .-`  | `,    )     Running in standalone mode
+ |`-._`-...-` __...-.``-._|'` _.-'|     Port: 7002
+ |    `-._   `._    /     _.-'    |     PID: 5124
+  `-._    `-._  `-./  _.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |           https://redis.io
+  `-._    `-._`-.__.-'_.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |
+  `-._    `-._`-.__.-'_.-'    _.-'
+      `-._    `-.__.-'    _.-'
+          `-._        _.-'
+              `-.__.-'
+
+5124:S 03 May 2023 18:24:39.819 # Server initialized
+5124:S 03 May 2023 18:24:39.820 * Loading RDB produced by version 7.0.11
+5124:S 03 May 2023 18:24:39.820 * RDB age 448 seconds
+5124:S 03 May 2023 18:24:39.820 * RDB memory usage when created 0.55 Mb
+5124:S 03 May 2023 18:24:39.820 * Done loading RDB, keys loaded: 0, keys expired: 0.
+5124:S 03 May 2023 18:24:39.820 * DB loaded from disk: 0.000 seconds
+5124:S 03 May 2023 18:24:39.820 * Ready to accept connections
+5124:S 03 May 2023 18:24:39.821 * Connecting to MASTER localhost:7001
+5124:S 03 May 2023 18:24:39.821 * MASTER <-> REPLICA sync started
+5124:S 03 May 2023 18:24:39.821 * Non blocking connect for SYNC fired the event.
+5124:S 03 May 2023 18:24:39.821 * Master replied to PING, replication can continue...
+5124:S 03 May 2023 18:24:39.822 * Partial resynchronization not possible (no cached master)
+5124:S 03 May 2023 18:24:44.115 * Full resync from master: a4d86be707bf2baef7f64b8e94703fec1f233bad:0
+5124:S 03 May 2023 18:24:44.116 * MASTER <-> REPLICA sync: receiving streamed RDB from master with EOF to disk
+5124:S 03 May 2023 18:24:44.116 * MASTER <-> REPLICA sync: Flushing old data
+5124:S 03 May 2023 18:24:44.116 * MASTER <-> REPLICA sync: Loading DB in memory
+5124:S 03 May 2023 18:24:44.122 * Loading RDB produced by version 7.0.11
+5124:S 03 May 2023 18:24:44.122 * RDB age 0 seconds
+5124:S 03 May 2023 18:24:44.122 * RDB memory usage when created 0.65 Mb
+5124:S 03 May 2023 18:24:44.122 * Done loading RDB, keys loaded: 0, keys expired: 0.
+5124:S 03 May 2023 18:24:44.122 * MASTER <-> REPLICA sync: Finished with success
+
+
+
+Master Logs
+
+5098:C 03 May 2023 18:17:24.978 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+5098:C 03 May 2023 18:17:24.978 # Redis version=7.0.11, bits=64, commit=00000000, modified=0, pid=5098, just started
+5098:C 03 May 2023 18:17:24.978 # Configuration loaded
+5098:M 03 May 2023 18:17:24.979 # You requested maxclients of 10000 requiring at least 10032 max file descriptors.
+5098:M 03 May 2023 18:17:24.979 # Server can't set maximum open files to 10032 because of OS error: Operation not permitted.
+5098:M 03 May 2023 18:17:24.979 # Current maximum open files is 4096. maxclients has been reduced to 4064 to compensate for low ulimit. If you need higher maxclients increase 'ulimit -n'.
+5098:M 03 May 2023 18:17:24.979 * monotonic clock: POSIX clock_gettime
+                _._
+           _.-``__ ''-._
+      _.-``    `.  `_.  ''-._           Redis 7.0.11 (00000000/0) 64 bit
+  .-`` .-```.  ```\/    _.,_ ''-._
+ (    '      ,       .-`  | `,    )     Running in standalone mode
+ |`-._`-...-` __...-.``-._|'` _.-'|     Port: 7001
+ |    `-._   `._    /     _.-'    |     PID: 5098
+  `-._    `-._  `-./  _.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |           https://redis.io
+  `-._    `-._`-.__.-'_.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |
+  `-._    `-._`-.__.-'_.-'    _.-'
+      `-._    `-.__.-'    _.-'
+          `-._        _.-'
+              `-.__.-'
+
+5098:M 03 May 2023 18:17:24.979 # Server initialized
+5098:M 03 May 2023 18:17:24.979 * Loading RDB produced by version 7.0.11
+5098:M 03 May 2023 18:17:24.979 * RDB age 13 seconds
+5098:M 03 May 2023 18:17:24.979 * RDB memory usage when created 0.55 Mb
+5098:M 03 May 2023 18:17:24.979 * Done loading RDB, keys loaded: 0, keys expired: 0.
+5098:M 03 May 2023 18:17:24.979 * DB loaded from disk: 0.000 seconds
+5098:M 03 May 2023 18:17:24.979 * Ready to accept connections
+5098:M 03 May 2023 18:24:39.822 * Replica 127.0.0.1:7002 asks for synchronization
+5098:M 03 May 2023 18:24:39.822 * Full resync requested by replica 127.0.0.1:7002
+5098:M 03 May 2023 18:24:39.822 * Replication backlog created, my new replication IDs are 'a4d86be707bf2baef7f64b8e94703fec1f233bad' and '0000000000000000000000000000000000000000'
+5098:M 03 May 2023 18:24:39.822 * Delay next BGSAVE for diskless SYNC
+5098:M 03 May 2023 18:24:44.115 * Starting BGSAVE for SYNC with target: replicas sockets
+5098:M 03 May 2023 18:24:44.115 * Background RDB transfer started by pid 5129
+5129:C 03 May 2023 18:24:44.116 * Fork CoW for RDB: current 0 MB, peak 0 MB, average 0 MB
+5098:M 03 May 2023 18:24:44.116 # Diskless rdb transfer, done reading from pipe, 1 replicas still up.
+5098:M 03 May 2023 18:24:44.122 * Background RDB transfer terminated with success
+5098:M 03 May 2023 18:24:44.123 * Streamed RDB transfer with replica 127.0.0.1:7002 succeeded (socket). Waiting for REPLCONF ACK from slave to enable streaming
+5098:M 03 May 2023 18:24:44.123 * Synchronization with replica 127.0.0.1:7002 succeeded
+
+
+Verify the replica id of the master in replica
+Master
+a4d86be707bf2baef7f64b8e94703fec1f233bad
+Replica:
+a4d86be707bf2baef7f64b8e94703fec1f233bad:0 
+  0 indicates byte received from the master 
+
+Show the role of master after connecting to replica:
+....................................................
+
+
+127.0.0.1:7001> role
+1) "master"
+2) (integer) 378
+3) 1) 1) "127.0.0.1"
+      2) "7002"
+      3) "378"
+
+Other Monitoring tool:
+
+127.0.0.1:7001> info replication
+# Replication
+role:master
+connected_slaves:1
+slave0:ip=127.0.0.1,port=7002,state=online,offset=924,lag=1
+master_failover_state:no-failover
+master_replid:a4d86be707bf2baef7f64b8e94703fec1f233bad
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:938
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:1
+repl_backlog_histlen:938
+
+lag: 0 => Well connected
+lag: 1 => might have been already, it restarted recently
+
+........................
+
+Write some data 
+in master 
+
+read data from the client(replica)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,140 @@
+			Redis Cluster - High Availablity
+.....................................................................................
+
+Partition:
+..........
+Partitioning is a general term used to describe the act of breaking up data and distributing it across different hosts.
+Breaking One Master Database data and share across multiple masters
+
+Replication:
+ One Master can have many replicas
+
+Why Partition?
+
+Partitioning is performed in a cluster of hosts when better performance, maintainability, or availability is desired.
+
+When Redis was initially designed, it had no intention to be a distributed data store; thus, it cannot natively distribute its data among different instances. It was designed to work well on a single server. 
+Redis Cluster is designed to solve distributed problems in Redis.
+
+Redis Persistency Model:
+
+Single Instance(Stand alone):
+   The whole data set is stored inside in one node, eg i have 5 million kyes, all stored in one node.
+   For back we move data to disk inform of rdb or aof
+
+Which is not scalble?
+
+In order to scale we need  another feature, replication.
+  Instead of keeping the whole data in one machine/one node we take snapshop-replicas
+
+Still it is not sclable, because we dump all keys into single server(master-replicas)
+
+Break the data of instead of master we share across multiple masters
+
+
+Types of Partition?
+
+1.Horizontal partitioning 
+2.Vertical partitioning
+
+Horizontal partitioning:
+........................
+
+Horizontal partitioning  means distributing "keys" across different redis instances.
+   -Key distribtion
+
+Vertical partitioning:
+........................
+
+Vertical partitioning distributing "key values" across differnt redis instances
+  -Values
+
+For example, if you have two Redis List/set/string/number stored in Redis, horizontal partitioning would distribute each Set entirely to a different Redis instance, while vertical partitioning would distribute the Set's values to different instances
+
+
+Horizontal partitioning (also known as sharding) is the most popular approach adopted with Redis
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+Where and How  to implement Partition?
+
+Client side
+  The application programs can decide how to distribute keys to redis instances
+
+Server Side
+   Redis servers can decide how to distribute keys across multiple nodes
+
+Proxy Side
+   Even proxy, can decide where to distribute keys.
+
+Now a days Server key distribution is most recommened...
+
+Horizontal partitioning Techniques: Range partitioning:
+........................................................
+
+Range partitioning is very simple; data is distributed based on a range of keys. Assuming that the keys you want to partition are based on incremental IDs, you can create numerical ranges to partition the data. For example, assuming that you have a group of users identified by IDs (such as user:1, user:2, and so on up to user:5000) you can split these IDs into ranges of thousands. Then you can send keys that go from 1 to 1000 to a given instance, 1001 to 2000 to a different instance, 2001 to 3000 to another instance, and so on.
+
+Horizontal partitioning Techniques: Hash partitioning :
+
+Hash partitioning is very simple to implement. It consists of finding the instance to send the commands by applying a hash function to the Redis key, dividing this hash value by the number of Redis instances available, and using the remainder of that division as the instance index. 
+var index = hashFunction(redisKey) % redisHosts.length; 
+var host = redisHosts[index]; 
+
+Redis does not use consistent hashing, but a different form of sharding where every key is conceptually part of what we call a "hash slot"
+
+There are 16834 hash slots in redis server and to computer the hash slot for a given key.
+We take the CRC16 of the key modulo 16384
+
+There is another way to distribute hash slots to group of nodes in the cluster also
+
+There are three nodes
+
+Node a contains hash slots from 0 to 5500
+
+Node b contains hash slots from 5501 to 11000
+
+Node c contains hash slots from 11001 to 16383
+
+if you add new node, redis will start "resharing" => it will compute slots and distributes
+
+if any node is removed redis may start "resharing" => it will compute slots and distributes
+
+
+High Availability and Scalability 
+
+
+Redis Cluster was designed to automatically shard data across different Redis instances, providing some degree of availability during network partitions.
+
+Redis Cluster only requires a single process to run.
+
+However, there are two ports that Redis uses.
+
+Redis Port Mapping:
+
+1.low port
+2.high port
+
+The first is used to serve clients (low port), and the second serves as a bus for node-to-node communication (high port).
+
+The high port is used to exchange messages such as failure detection, failover, resharding, and so on.
+
+
+The Redis Cluster bus uses a binary protocol to exchange messages between nodes.
+
+The low port is specified in the configuration, and Redis assigns the high port by adding 10,000 to the low port. 
+
+For example, if a Redis server starts listening to port 6379 (low port) in cluster mode, it will internally assign port 16379 (high port) for node-to-node communication.
+
+The Redis Cluster topology is a full mesh network. All nodes are interconnected through Transmission Control Protocol (TCP) connections
+
+Redis Cluster requires at least three masters, to be considered healthy. All data is sharded across the masters and replicated to the slaves
+
+
+Lab : 
+
+Setup cluster:
+
+1.From command line
+
+2.via cluster automation script
+
+3.via Redis enterprise cluster configuration dashboard.

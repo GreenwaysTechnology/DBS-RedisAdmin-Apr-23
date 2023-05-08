@@ -173,7 +173,120 @@ Append-only File (AOF)				Snapshot (RDB)
 (files tend to grow large 
 and require compaction)			    Requires less resource (I/O once 						            every several hours and no compaction 						    required)
 ....................................................................................
+			         Snapshot
 
+configuration:
+
+Manuall saving 
+
+save 
+  when you start taking backups save command will block the current redis-instance
+bgsave
+  when you start taking backup which happens in the background by using child process.
+
+directive:
+  It is a term used in redis-conf to mention configuration key
+
+redis-conf
+  
+save <seconds> <changes> [<seconds> <changes> ...]
+
+save 900 1 
+  in 900sc at alteat 1 key must have been changed
+if it happens, redis takes backup.
+
+if in X seconds, Y amount of write operations have happened in your Redis instance, it will create a .rdb file. 
+
+Save a .rdb file on disk every 900 seconds (15 minutes) if at least one write operation happens. 
+Save a .rdb file on disk every 300 seconds (5 minutes) if at least 10 write operations happen. 
+Save a .rdb file on disk every 60 seconds (1 minute) if at least 10,000 write operations happen. 
+
+Disabling Rdb SNAPSHOTTING:
+
+save "" 
+
+The default file Name is "dump.rdb"
+
+Not recommended to use save directives less than 30 seconds 
+
+Advanced Configuration:
+
+stop-writes-on-bgsave-error: 
+   The possible values for this are yes or no. This option makes Redis stop accepting writes if the last background save has failed. Redis starts accepting writes again after a background save succeeds. The default value is yes 
+
+rdbcompression: The possible values for this are yes or no. 
+When this option is set to yes, Redis uses LZF compression for the .rdb files. The default value is yes 
+
+rdbchecksum: The possible values for this are yes or no. When it is set to yes, Redis saves a checksum at the end of the .rdb file and performs a checksum before loading the .rdb file. Redis does not start if the RDB checksum does not match with the one in the file. The default value is yes 
+
+# The filename where to dump the DB
+dbfilename dump.rdb
+
+The working directory.
+#
+# The DB will be written inside this directory, with the filename specified
+# above using the 'dbfilename' configuration directive.
+#
+# The Append Only File will also be created inside this directory.
+#
+# Note that you must specify a directory here, not a file name.
+dir ./
+....................................................................................
+			 AOF configuration
+
+=> By default Redis asynchronously dumps the dataset on disk
+
+Configuration Directive:
+
+appendonly no appendonly yes
+
+when of aof enabled in redis-7, which creates three files
+
+1.rbd file
+2.aof file
+3.manifest files
+
+
+File names:
+#
+# - appendonly.aof.1.base.rdb as a base file.
+# - appendonly.aof.1.incr.aof, appendonly.aof.2.incr.aof as incremental files.
+# - appendonly.aof.manifest as a manifest file.
+
+appendfilename "appendonly.aof"
+
+Directory:
+appenddirname "appendonlydir"
+
+appendfsync policy: 
+
+Redis uses a background thread to perform fsync() in the main process (fsync() is a system call that tells the OS to flush data to disk). 
+Redis allows you to configure the fsync policy in three possible ways
+
+: no: Do not execute fsync(); let the OS decide when to flush the data. This is the fastest option 
+
+always: Execute fsync() after every write. This is the slowest option, but also the safest 
+
+everysec: Execute fsync() once every second. This still provides good write performance. This is the default value 
+
+no-appendfsync-on-rewrite: The possible values are yes and no. If the appendfsync policy is set to everysec or always and a background save or AOF log rewrite is taking place, Redis may block due to a lot of disk I/O (the fsync() syscall will be long). You You should only enable this option if you have latency problems. The default value is no 
+
+auto-aof-rewrite-percentage: The valid values range from 0 to 100. Redis is able to automatically rewrite the log file by implicitly executing the command BGREWRITEAOF when the AOF size grows by the specified percentage. The default value is 100 
+
+• auto-aof-rewrite-min-size: This is the minimum size for AOF to be rewritten. This prevents AOF rewrites until the specified minimum size is reached, even if the specified auto-aof-rewrite-percentage value is exceeded. The default value is 67,108,864 bytes 
+
+• aof-load-truncated: The possible values are yes and no. In the event of a crash, the AOF may get truncated, and this option specifies whether Redis should load the truncated AOF on startup or exit with an error. When the value is yes, Redis will load the truncated file and emit an error message. When it is no, Redis will exit with an error and not load the truncated file 
+
+
+# Redis can create append-only base files in either RDB or AOF formats. Using
+# the RDB format is always faster and more efficient, and disabling it is only
+# supported for backward compatibility purposes.
+aof-use-rdb-preamble yes
+
+# Redis supports recording timestamp annotations in the AOF to support restoring
+# the data from a specific point-in-time. However, using this capability changes
+# the AOF format in a way that may not be compatible with existing AOF parsers.
+aof-timestamp-enabled no
 
 
 

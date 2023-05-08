@@ -1,0 +1,146 @@
+				Redis -Replication
+.....................................................................................
+
+What is Replication?
+ Replication means that while you write to a Redis instance (usually referred to as the master), it will ensure that one or more instances (usually referred to as the replica) become exact copies of the master. 
+
+One Leader(Master) many followers(replicas)
+
+Clients always/generally writes data to the Redis master ,where redis master replicates the data to the replicas.
+
+Clients generally reads data from the replica, but also can read data from Master too
+
+The data is kept in many places not only in single server
+  ->The data is kept inside many redis servers - replication
+  ->The data is kept in disk outside redis process - Persistency /Backup
+
+Key facts:
+1.Redis async.
+
+What is async and Non blocking?
+
+In Redis we are doing two major operations 
+1.read => 2.write => IO.
+
+2.Replication is non blocking on the master side
+   => Because of the replication should not affect the client performance while write or read by the client.
+
+3.Replication can be async/non blocking on the replica side aside as well.
+   There are some windows where replicas when you(client) make read against replicas, you get message "Hey i am still synching with my master , i am unable to serve your request=>Client will throw message that is busy
+
+4.Master can have any no replicas
+
+5.Generally replicas are readonly but some use cases replicas can allow write operations based on some configuration in redis.conf
+
+What is difference between writing data to replica and master?
+ 
+=>One thing you have to remember , when you write to replica, that write is local to that replica only, that wont go any where else.
+
+=>if you write master it will go to all replicas
+=>writes to replica can be overriden when the next the replication happens from the master.
+
+=>Any replica can be become master to other replicas you can have chain of that.
+  it is very usefull that is say 3 replicas in one DC(data center) and other three in another DC, and you have master in any one of the DC. there is no point this writes over the van to all three replicas, remote DC , instead what it can do, choose local master in the remote DC, write to that and that master can replicate rest of the repicas in the DC
+
+Why replication ? what is the application of replication?
+
+=>The primary need is high availablity, since redis is in memory database, if redis down you want  some one immediatly, take the data and serve it.
+ so you can serve this using in memory replica.
+
+=>You need redis replication spreading read load and this happens lets say you have 
+  "Caching needs" and you can serve all caching read with on redis server, it can handle all the writes , how ever transaction per sec is so many, that cant serve using single redis instance thats why we go for replication
+
+=>You do replication lieu of(instead of) persistence,you know very well redis offers persistency but it has its own bagage, you need "hard disk" with your computer more moving parts, more chances for failures. there are use cases they dont want all the things but still need copy of the data, and replication serves these needs.
+
+Types of Replication:
+.....................
+1.Full sync
+2.Partial sync
+
+Sync is nothing but how and when data is transfered from the master to replicas.
+
+Full sync:
+ Full sync, the name indicates you are taking the entire dump from your  master to replicas 
+
+How does the master does this?
+  
+  The redis master does this by forking itself into a separte process,then the forked process then responsible for sending data over to the replicas.
+
+Ways to send data by Forked process:
+  =>Forked process can write data to the disk on the master side and the disk file is   transfered to the replicas => this is old way of transfering data.
+
+  Client===>write==>Redis master===>Fork master==>write data into disk===>copy the data by replicas =>Full sync
+ 
+ =>Fored process can write data over wire(network),without disk called "disk less mode" in the master side, but still you need disk in the replica side to collect data
+so that replicas can bootstrap with data.
+
+ =>Full sync starts in the begining of server start up- very fresh
+ =>Full sync starts in the case of partial sync fails
+.....................................................................................
+Partial sync:
+  When the link between master and replicas break, for network issues or because a timeout is sensed in the master side or replica side, the replicas try to reconnect and attempts to proceed with partial resynchronization;
+   
+
+Replication Back Log:
+....................
+ In the master, it keeps certain amount of memory reserved for back log.
+
+What is back log?
+  An accumulation of tasks not perfomed.
+
+As when new write comes in to the master, the master writes data in two places
+one is "Back log buffer" and another one is redis data store.
+
+With each byte you write, you keep "offset"
+ 
+Offset : the location of byte position.
+
+The offset keeps increasing ever.
+
+This buffer(back log buffer), it is cuirculler buffer.
+
+Cirucllur buffer:
+................
+  Data structure that uses fixed size buffer as if it is connected end to end.
+
+It has a beigning pointer of valid data and each pointer like you know first byte offset and current valid offset and in between that is your valid data, right so 
+
+"Replication offset" is you know where i am at currently in the buffer.
+
+=>you cant the offset iself, the concept called "replication id".
+
+Replication Id:
+...............
+ Every redis master has a replication ID: it is a large pseudo random string that marks a given story of the dataset.
+
+ when master dies, again master comes to life, given unique Replication ID.
+
+ When replicaes connect to masters, they use  the PSYNC command to send their old master replication ID and the offsets they processed.
+
+This is way the master can send juus the incremental part needed. How ever there is not enough back lo in the master buffers, or the replica is refering to an history(Replication ID) Which is no longer known then full resync will  happen, in this case the replica will data full data from the scratch.
+
+Replica client output buffer:
+............................
+Redis is in memory database, reading from memory is super cheap, writing to network s not cheap so impedance mismath - read from the memory is faster, than writing data into network.
+
+Redis is single threaded so it wants to write as fast as possible, client and move on next work , how ever you cant write that fast in network this is only slowest part.
+ 
+in order to bridge this gap redis has the concep of client output buffer essentially what ever you want write back to clients, it writes to the client output buffer than merely goes on then output buffer responsible for draining the data to the client.
+and your replica is nothing but another client from the redis master point of view if you look it  ou are writing data over the network.
+
+Replicas also has client output buffer that alos plays role in the partial sync.
+
+Data is getting drained form the client output buffer but in the back log data is actually is kept for any other replica comes back bit later whose of out of sync , you you still kep the circuller buffer.
+
+
+
+
+
+
+
+
+
+
+
+
+
