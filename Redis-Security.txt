@@ -1,0 +1,16 @@
+				Redis Security
+......................................................................................
+1.Basic Security Arch
+2.Authentication and Authorization
+3.TLS - Transport Security layer
+
+
+=>Horror Story
+=>Readings
+  CIA Triad
+  Risk Assessment
+  Defense In Depth
+
+
+CIA Triad:
+The three letters in "CIA triad" stand for Confidentiality, Integrity, and Availability. The CIA triad is a common model that forms the basis for the development of security systems.

@@ -1,0 +1,776 @@
+Cluster Lab:
+
+install redis binary version 
+
+sudo apt install lsb-release
+curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+
+sudo apt-get update
+sudo apt-get install redis
+
+
+
+mkdir clustering
+
+create redis.conf
+
+
+create 8 folders
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$ mkdir 7000 7001 7002 7003 7004 7005 7006 7007
+
+copy redis.conf files into directories
+
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$ ls
+7000  7001  7002  7003  7004  7005  7006  7007  redis.conf
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$ cp redis.conf 7000
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$ cp redis.conf 7001
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$ cp redis.conf 7002
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$ cp redis.conf 7003
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$ cp redis.conf 7004
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$ cp redis.conf 7005
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$ cp redis.conf 7006
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$ cp redis.conf 7007
+subugee@LAPTOP-R2TGGFDL:~/redis-session/clustering$
+
+Edit port in every folder like
+port 7000
+port 7001
+port 7002
+
+cluster-config-file nodes-7002.conf 
+
+
+Run servers:
+clustering$ redis-server 7000/redis.conf
+redis-server 7001/redis.conf
+redis-server 7002/redis.conf
+redis-server 7003/redis.conf
+redis-server 7004/redis.conf
+redis-server 7005/redis.conf
+redis-server 7006/redis.conf
+redis-server 7007/redis.conf
+
+setup cluster
+
+ redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
+> 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 \
+  127.0.0.1:7006 127.0.0.1:7007
+> --cluster-replicas 1
+
+>>> Performing hash slots allocation on 6 nodes...
+Master[0] -> Slots 0 - 5460
+Master[1] -> Slots 5461 - 10922
+Master[2] -> Slots 10923 - 16383
+Adding replica 127.0.0.1:7004 to 127.0.0.1:7000
+Adding replica 127.0.0.1:7005 to 127.0.0.1:7001
+Adding replica 127.0.0.1:7003 to 127.0.0.1:7002
+>>> Trying to optimize slaves allocation for anti-affinity
+[WARNING] Some slaves are in the same host as their master
+M: 7780e591176caa89f8dfa5a52c9b9506ad8a9e44 127.0.0.1:7000
+   slots:[0-5460] (5461 slots) master
+M: 43fe0d17df3a960b85603fd17cffbdc210f615e7 127.0.0.1:7001
+   slots:[4096-10922] (5462 slots) master
+M: 3f6e1c9711ba1ecbdef85329ab47ea6971ed5a72 127.0.0.1:7002
+   slots:[8192-16383] (5461 slots) master
+S: 79c9fedfede2384eef7b3df14267eb7e9c18d149 127.0.0.1:7003
+   replicates 3f6e1c9711ba1ecbdef85329ab47ea6971ed5a72
+S: 045d41882e3ff643ffcda41113c9336f41b60d36 127.0.0.1:7004
+   replicates 7780e591176caa89f8dfa5a52c9b9506ad8a9e44
+S: a2f9fa6a879cebf30d5409f5baf5bbc01cb934b7 127.0.0.1:7005
+   replicates 43fe0d17df3a960b85603fd17cffbdc210f615e7
+Can I set the above configuration? (type 'yes' to accept): yes
+>>> Nodes configuration updated
+>>> Assign a different config epoch to each node
+>>> Sending CLUSTER MEET messages to join the cluster
+Waiting for the cluster to join
+....
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 7780e591176caa89f8dfa5a52c9b9506ad8a9e44 127.0.0.1:7000
+   slots:[0-4095] (4096 slots) master
+   1 additional replica(s)
+S: 045d41882e3ff643ffcda41113c9336f41b60d36 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 7780e591176caa89f8dfa5a52c9b9506ad8a9e44
+M: 3f6e1c9711ba1ecbdef85329ab47ea6971ed5a72 127.0.0.1:7002
+   slots:[8192-12287] (4096 slots) master
+S: a2f9fa6a879cebf30d5409f5baf5bbc01cb934b7 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 43fe0d17df3a960b85603fd17cffbdc210f615e7
+M: 43fe0d17df3a960b85603fd17cffbdc210f615e7 127.0.0.1:7001
+   slots:[4096-8191] (4096 slots) master
+   1 additional replica(s)
+M: 79c9fedfede2384eef7b3df14267eb7e9c18d149 127.0.0.1:7003
+   slots:[12288-16383] (4096 slots) master
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+
+Connecting to primary server:
+redis-cli -p 7000 -c
+127.0.0.1:7000> PING
+PONG
+
+CLSTER SLOTS
+127.0.0.1:7000> CLUSTER SLOTS
+1) 1) (integer) 8192
+   2) (integer) 12287
+   3) 1) "127.0.0.1"
+      2) (integer) 7002
+      3) "3f6e1c9711ba1ecbdef85329ab47ea6971ed5a72"
+2) 1) (integer) 0
+   2) (integer) 4095
+   3) 1) "127.0.0.1"
+      2) (integer) 7000
+      3) "7780e591176caa89f8dfa5a52c9b9506ad8a9e44"
+   4) 1) "127.0.0.1"
+      2) (integer) 7004
+      3) "045d41882e3ff643ffcda41113c9336f41b60d36"
+3) 1) (integer) 4096
+   2) (integer) 8191
+   3) 1) "127.0.0.1"
+      2) (integer) 7001
+      3) "43fe0d17df3a960b85603fd17cffbdc210f615e7"
+   4) 1) "127.0.0.1"
+      2) (integer) 7005
+      3) "a2f9fa6a879cebf30d5409f5baf5bbc01cb934b7"
+4) 1) (integer) 12288
+   2) (integer) 16383
+   3) 1) "127.0.0.1"
+      2) (integer) 7003
+      3) "79c9fedfede2384eef7b3df14267eb7e9c18d149"
+
+ CLUSTER INFO
+cluster_state:ok
+cluster_slots_assigned:16384
+cluster_slots_ok:16384
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6
+cluster_size:4
+cluster_current_epoch:6
+cluster_my_epoch:1
+cluster_stats_messages_ping_sent:923
+cluster_stats_messages_pong_sent:911
+cluster_stats_messages_sent:1834
+cluster_stats_messages_ping_received:906
+cluster_stats_messages_pong_received:923
+cluster_stats_messages_meet_received:5
+cluster_stats_messages_received:1834
+
+127.0.0.1:7000> SET A 100
+-> Redirected to slot [6373] located at 127.0.0.1:7001
+OK
+127.0.0.1:7001> SET B 2000
+-> Redirected to slot [10374] located at 127.0.0.1:7002
+OK
+127.0.0.1:7002>
+
+Let’s add a new shard to the cluster, which is something you might do when you need to scale.
+
+First, as before, we need to start two new empty Redis instances (primary and its replica) in cluster mode. We create new directories 7008 and 7009 and in them we copy the same redis.conf file we used before, making sure we change the port directive in them to the appropriate port (7008 and 7009).
+
+$ mkdir 7008 7009
+$ cp 7000/redis.conf 7008/redis.conf
+$ cp 7000/redis.conf 7009/redis.conf
+
+Let’s start the Redis instances:
+
+# Terminal tab 8
+$ cd 7006
+$ redis-server ./redis.conf
+# Terminal tab 9
+$ cd 7007
+$ redis-server ./redis.conf
+
+Step 8
+In the next step we join the new primary shard to the cluster with the add-node command. The first parameter is the address of the new shard, and the second parameter is the address of any of the current shards in the cluster.
+
+redis-cli --cluster add-node 127.0.0.1:7008 127.0.0.1:7000
+>>> Adding node 127.0.0.1:7008 to cluster 127.0.0.1:7000
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 7780e591176caa89f8dfa5a52c9b9506ad8a9e44 127.0.0.1:7000
+   slots:[0-4095] (4096 slots) master
+   1 additional replica(s)
+M: 6bfcdf77c82b1f1a50cf821527c456dae4e2b719 127.0.0.1:7006
+   slots: (0 slots) master
+S: 045d41882e3ff643ffcda41113c9336f41b60d36 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 7780e591176caa89f8dfa5a52c9b9506ad8a9e44
+M: 3f6e1c9711ba1ecbdef85329ab47ea6971ed5a72 127.0.0.1:7002
+   slots:[8192-12287] (4096 slots) master
+S: a2f9fa6a879cebf30d5409f5baf5bbc01cb934b7 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 43fe0d17df3a960b85603fd17cffbdc210f615e7
+M: 43fe0d17df3a960b85603fd17cffbdc210f615e7 127.0.0.1:7001
+   slots:[4096-8191] (4096 slots) master
+   1 additional replica(s)
+M: 79c9fedfede2384eef7b3df14267eb7e9c18d149 127.0.0.1:7003
+   slots:[12288-16383] (4096 slots) master
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+>>> Send CLUSTER MEET to node 127.0.0.1:7008 to make it join the cluster.
+[OK] New node added correctly.
+
+redis-cli -p 7000 cluster nodes
+
+ redis-cli -p 7000 cluster nodes
+ecd57d1dbf787029123ede588d2c693d5d8d783a 127.0.0.1:7008@17008 master - 0 1683130753080 0 connected
+6bfcdf77c82b1f1a50cf821527c456dae4e2b719 127.0.0.1:7006@17006 master - 0 1683130752579 7 connected
+045d41882e3ff643ffcda41113c9336f41b60d36 127.0.0.1:7004@17004 slave 7780e591176caa89f8dfa5a52c9b9506ad8a9e44 0 1683130753581 5 connected
+3f6e1c9711ba1ecbdef85329ab47ea6971ed5a72 127.0.0.1:7002@17002 master - 0 1683130754082 3 connected 8192-12287
+a2f9fa6a879cebf30d5409f5baf5bbc01cb934b7 127.0.0.1:7005@17005 slave 43fe0d17df3a960b85603fd17cffbdc210f615e7 0 1683130753000 6 connected
+7780e591176caa89f8dfa5a52c9b9506ad8a9e44 127.0.0.1:7000@17000 myself,master - 0 1683130752000 1 connected 0-4095
+43fe0d17df3a960b85603fd17cffbdc210f615e7 127.0.0.1:7001@17001 master - 0 1683130754583 2 connected 4096-8191
+79c9fedfede2384eef7b3df14267eb7e9c18d149 127.0.0.1:7003@17003 master - 0 1683130753000 4 connected 12288-16383
+
+The port of the primary shard we added in the last step was 7008, and we can see it on the first line. It’s id is ecd57d1dbf787029123ede588d2c693d5d8d783a.
+
+redis-cli -p 7000 --cluster add-node 127.0.0.1:7009 127.0.0.1:7000 --cluster-slave --cluster-master-id ecd57d1dbf787029123ede588d2c693d5d8d783a
+>>> Adding node 127.0.0.1:7009 to cluster 127.0.0.1:7000
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 7780e591176caa89f8dfa5a52c9b9506ad8a9e44 127.0.0.1:7000
+   slots:[0-4095] (4096 slots) master
+   1 additional replica(s)
+M: ecd57d1dbf787029123ede588d2c693d5d8d783a 127.0.0.1:7008
+   slots: (0 slots) master
+M: 6bfcdf77c82b1f1a50cf821527c456dae4e2b719 127.0.0.1:7006
+   slots: (0 slots) master
+S: 045d41882e3ff643ffcda41113c9336f41b60d36 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 7780e591176caa89f8dfa5a52c9b9506ad8a9e44
+M: 3f6e1c9711ba1ecbdef85329ab47ea6971ed5a72 127.0.0.1:7002
+   slots:[8192-12287] (4096 slots) master
+S: a2f9fa6a879cebf30d5409f5baf5bbc01cb934b7 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 43fe0d17df3a960b85603fd17cffbdc210f615e7
+M: 43fe0d17df3a960b85603fd17cffbdc210f615e7 127.0.0.1:7001
+   slots:[4096-8191] (4096 slots) master
+   1 additional replica(s)
+M: 79c9fedfede2384eef7b3df14267eb7e9c18d149 127.0.0.1:7003
+   slots:[12288-16383] (4096 slots) master
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+>>> Send CLUSTER MEET to node 127.0.0.1:7009 to make it join the cluster.
+Waiting for the cluster to join
+
+>>> Configure node as replica of 127.0.0.1:7008.
+[OK] New node added correctly.
+
+The flag cluster-slave indicates that the shard should join as a replica and --cluster-master-id ecd57d1dbf787029123ede588d2c693d5d8d783a specifies which primary shard it should replicate.
+
+
+Step 10
+Now our cluster has 10 shards (5 primary and 5 replica), but if we run the cluster slots command we’ll see that the newly added shards don’t host any hash slots, and thus - data. Let’s assign some hash slots to them:
+
+$ redis-cli  -p 7000  --cluster reshard 127.0.0.1:7000
+
+
+We use the command reshard and the address of any shard in the cluster as an argument here. In the next step we’ll be able to choose the shards we’ll be moving slots from and to.
+
+The first question you’ll get is about the number of slots you want to move. If we have 16384 slots in total, and four primary shards, let’s get a quarter of all shards, so the data is distributed equally. 16384 ÷ 4 is 4096, so let’s use that number.
+
+The next question is about the receiving shard id; the ID of the primary shard we want to move the data to, which we learned how to get in the previous step, with the cluster nodes command.
+
+Finally, we need to enter the IDs of the shards we want to copy data from. Alternatively, we can type “all” and the shard will move a number of hash slots from all available primary shards.
+
+ redis-cli  -p 7000  --cluster reshard 127.0.0.1:7000
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 7780e591176caa89f8dfa5a52c9b9506ad8a9e44 127.0.0.1:7000
+   slots:[0-4095] (4096 slots) master
+   1 additional replica(s)
+M: 6bfcdf77c82b1f1a50cf821527c456dae4e2b719 127.0.0.1:7006
+   slots: (0 slots) master
+S: a2f9fa6a879cebf30d5409f5baf5bbc01cb934b7 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 43fe0d17df3a960b85603fd17cffbdc210f615e7
+S: 3cf51ad2571d2389c1313bca141cdb91872ee7e5 127.0.0.1:7009
+   slots: (0 slots) slave
+   replicates ecd57d1dbf787029123ede588d2c693d5d8d783a
+S: 045d41882e3ff643ffcda41113c9336f41b60d36 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 7780e591176caa89f8dfa5a52c9b9506ad8a9e44
+M: ecd57d1dbf787029123ede588d2c693d5d8d783a 127.0.0.1:7008
+   slots: (0 slots) master
+   1 additional replica(s)
+M: 3f6e1c9711ba1ecbdef85329ab47ea6971ed5a72 127.0.0.1:7002
+   slots:[8192-12287] (4096 slots) master
+M: 79c9fedfede2384eef7b3df14267eb7e9c18d149 127.0.0.1:7003
+   slots:[12288-16383] (4096 slots) master
+M: 43fe0d17df3a960b85603fd17cffbdc210f615e7 127.0.0.1:7001
+   slots:[4096-8191] (4096 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+How many slots do you want to move (from 1 to 16384)? all
+How many slots do you want to move (from 1 to 16384)? 4096
+What is the receiving node ID? ecd57d1dbf787029123ede588d2c693d5d8d783a
+Please enter all the source node IDs.
+  Type 'all' to use all the nodes as source nodes for the hash slots.
+  Type 'done' once you entered all the source nodes IDs.
+Source node #1: all
+
+Ready to move 4096 slots.
+  Source nodes:
+    M: 7780e591176caa89f8dfa5a52c9b9506ad8a9e44 127.0.0.1:7000
+       slots:[0-4095] (4096 slots) master
+       1 additional replica(s)
+    M: 6bfcdf77c82b1f1a50cf821527c456dae4e2b719 127.0.0.1:7006
+       slots: (0 slots) master
+    M: 3f6e1c9711ba1ecbdef85329ab47ea6971ed5a72 127.0.0.1:7002
+       slots:[8192-12287] (4096 slots) master
+    M: 79c9fedfede2384eef7b3df14267eb7e9c18d149 127.0.0.1:7003
+       slots:[12288-16383] (4096 slots) master
+    M: 43fe0d17df3a960b85603fd17cffbdc210f615e7 127.0.0.1:7001
+       slots:[4096-8191] (4096 slots) master
+       1 additional replica(s)
+  Destination node:
+    M: ecd57d1dbf787029123ede588d2c693d5d8d783a 127.0.0.1:7008
+       slots: (0 slots) master
+       1 additional replica(s)
+  Resharding plan:
+    Moving slot 0 from 7780e591176caa89f8dfa5a52c9b9506ad8a9e44
+    Moving slot 1 from 7780e591176caa89f8dfa5a52c9b9506ad8a9e44
+    Moving slot 2 from 7780e591176caa89f8dfa5a52c9b9506ad8a9e44
+    Moving slot 3 from 7780e591176caa89f8dfa5a52c9b9506ad8a9e44
+    Moving slot 4 from 7780e591176caa89f8dfa5a52c9b9506ad8a9e44
+
+redis-cli -p 7000  -c
+127.0.0.1:7000> set a 10
+-> Redirected to slot [15495] located at 127.0.0.1:7003
+OK
+127.0.0.1:7003> set a 10
+OK
+127.0.0.1:7003> set a8 10
+-> Redirected to slot [3904] located at 127.0.0.1:7000
+OK
+127.0.0.1:7000> set a899 10
+-> Redirected to slot [6933] located at 127.0.0.1:7001
+OK
+127.0.0.1:7001>
+....................................................................................
+How to join new replica to added new master?
+
+finally we need to join new replica shard(node),with the same add-node command, and a few extra arugments the shard is joining as a replica and what will be its primary shard, if we dont specify a primary shard redis will assign one itself.
+
+execute this command:
+ redis-cli -p 7000 cluster nodes
+fb70544978be4b5d55b4722667725488386cb065 127.0.0.1:7003@17003 slave 272240c7de4759a09b16de13a4fdc01d0f3895b2 0 1683720241000 1 connected
+39ca94fb21c28c64bba3de354a09fd3a877b94bf 127.0.0.1:7005@17005 slave 55133904c943a306b0039c275c00aaceffb013d1 0 1683720242071 3 connected
+cbcf3bf7695c9491bba8890bea9d9ff319708954 127.0.0.1:7006@17006 master - 0 1683720242572 0 connected
+55133904c943a306b0039c275c00aaceffb013d1 127.0.0.1:7002@17002 master - 0 1683720242572 3 connected 10923-16383
+6d48e67ce3376de7bb0f39c6e503ffd23aa1e240 127.0.0.1:7004@17004 slave 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d 0 1683720241000 2 connected
+272240c7de4759a09b16de13a4fdc01d0f3895b2 127.0.0.1:7000@17000 myself,master - 0 1683720242000 1 connected 0-5460
+187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d 127.0.0.1:7001@17001 master - 0 1683720242000 2 connected 5461-10922
+
+The port of the primary node or shard we added in the last step was 7006, and we can see it on the first line. its cbcf3bf7695c9491bba8890bea9d9ff319708954 which is called cluster id.
+
+redis-cli -p 7000 --cluster add-node 127.0.0.1:7007 127.0.0.1:7000 --cluster-slave --cluster-master-id cbcf3bf7695c9491bba8890bea9d9ff319708954
+>>> Adding node 127.0.0.1:7007 to cluster 127.0.0.1:7000
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 272240c7de4759a09b16de13a4fdc01d0f3895b2 127.0.0.1:7000
+   slots:[0-5460] (5461 slots) master
+   1 additional replica(s)
+S: fb70544978be4b5d55b4722667725488386cb065 127.0.0.1:7003
+   slots: (0 slots) slave
+   replicates 272240c7de4759a09b16de13a4fdc01d0f3895b2
+S: 39ca94fb21c28c64bba3de354a09fd3a877b94bf 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 55133904c943a306b0039c275c00aaceffb013d1
+M: cbcf3bf7695c9491bba8890bea9d9ff319708954 127.0.0.1:7006
+   slots: (0 slots) master
+M: 55133904c943a306b0039c275c00aaceffb013d1 127.0.0.1:7002
+   slots:[10923-16383] (5461 slots) master
+   1 additional replica(s)
+S: 6d48e67ce3376de7bb0f39c6e503ffd23aa1e240 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d
+M: 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d 127.0.0.1:7001
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+>>> Send CLUSTER MEET to node 127.0.0.1:7007 to make it join the cluster.
+Waiting for the cluster to join
+
+>>> Configure node as replica of 127.0.0.1:7006.
+[OK] New node added correctly.
+
+...................................................................................
+				Resharding
+
+Now our cluster has eigh shards(4 primary and four replicas),but if we run the cluster slots command we will see that newly added shareds dont host any hash slots-thus 
+
+127.0.0.1:7000> cluster slots
+1) 1) (integer) 0
+   2) (integer) 5460
+   3) 1) "127.0.0.1"
+      2) (integer) 7000
+      3) "272240c7de4759a09b16de13a4fdc01d0f3895b2"
+      4) (empty array)
+   4) 1) "127.0.0.1"
+      2) (integer) 7003
+      3) "fb70544978be4b5d55b4722667725488386cb065"
+      4) (empty array)
+2) 1) (integer) 5461
+   2) (integer) 10922
+   3) 1) "127.0.0.1"
+      2) (integer) 7001
+      3) "187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d"
+      4) (empty array)
+   4) 1) "127.0.0.1"
+      2) (integer) 7004
+      3) "6d48e67ce3376de7bb0f39c6e503ffd23aa1e240"
+      4) (empty array)
+3) 1) (integer) 10923
+   2) (integer) 16383
+   3) 1) "127.0.0.1"
+      2) (integer) 7002
+      3) "55133904c943a306b0039c275c00aaceffb013d1"
+      4) (empty array)
+   4) 1) "127.0.0.1"
+      2) (integer) 7005
+      3) "39ca94fb21c28c64bba3de354a09fd3a877b94bf"
+      4) (empty array)
+
+Lets assign some hash slots to them
+
+redis-cli -p 7000 --cluster reshard 127.0.0.1:7000
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 272240c7de4759a09b16de13a4fdc01d0f3895b2 127.0.0.1:7000
+   slots:[0-5460] (5461 slots) master
+   1 additional replica(s)
+S: fb70544978be4b5d55b4722667725488386cb065 127.0.0.1:7003
+   slots: (0 slots) slave
+   replicates 272240c7de4759a09b16de13a4fdc01d0f3895b2
+S: 39ca94fb21c28c64bba3de354a09fd3a877b94bf 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 55133904c943a306b0039c275c00aaceffb013d1
+S: ea2457e244d9faa50489b8bbec54e511eef6f071 127.0.0.1:7007
+   slots: (0 slots) slave
+   replicates cbcf3bf7695c9491bba8890bea9d9ff319708954
+M: cbcf3bf7695c9491bba8890bea9d9ff319708954 127.0.0.1:7006
+   slots: (0 slots) master
+   1 additional replica(s)
+M: 55133904c943a306b0039c275c00aaceffb013d1 127.0.0.1:7002
+   slots:[10923-16383] (5461 slots) master
+   1 additional replica(s)
+S: 6d48e67ce3376de7bb0f39c6e503ffd23aa1e240 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d
+M: 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d 127.0.0.1:7001
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+How many slots do you want to move (from 1 to 16384)?
+
+Here it is asking how many shards you want to allocat?
+
+The first question you will get is about the number of slots you want to move. if we have 16384 slots in total
+and four primary shards, lets get a quarter of all shards, so the data is distributed equally.
+
+so 
+ 16384 / 4 is 4096, so let's use this number.
+
+redis-cli -p 7000 --cluster reshard 127.0.0.1:7000
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 272240c7de4759a09b16de13a4fdc01d0f3895b2 127.0.0.1:7000
+   slots:[0-5460] (5461 slots) master
+   1 additional replica(s)
+S: fb70544978be4b5d55b4722667725488386cb065 127.0.0.1:7003
+   slots: (0 slots) slave
+   replicates 272240c7de4759a09b16de13a4fdc01d0f3895b2
+S: 39ca94fb21c28c64bba3de354a09fd3a877b94bf 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 55133904c943a306b0039c275c00aaceffb013d1
+S: ea2457e244d9faa50489b8bbec54e511eef6f071 127.0.0.1:7007
+   slots: (0 slots) slave
+   replicates cbcf3bf7695c9491bba8890bea9d9ff319708954
+M: cbcf3bf7695c9491bba8890bea9d9ff319708954 127.0.0.1:7006
+   slots: (0 slots) master
+   1 additional replica(s)
+M: 55133904c943a306b0039c275c00aaceffb013d1 127.0.0.1:7002
+   slots:[10923-16383] (5461 slots) master
+   1 additional replica(s)
+S: 6d48e67ce3376de7bb0f39c6e503ffd23aa1e240 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d
+M: 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d 127.0.0.1:7001
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+How many slots do you want to move (from 1 to 16384)? 4096
+What is the receiving node ID?
+
+The next question is about the receving shardid/node id, the ID of the primary shard we want to move the data to,
+
+
+redis-cli -p 7000 --cluster reshard 127.0.0.1:7000
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 272240c7de4759a09b16de13a4fdc01d0f3895b2 127.0.0.1:7000
+   slots:[0-5460] (5461 slots) master
+   1 additional replica(s)
+S: fb70544978be4b5d55b4722667725488386cb065 127.0.0.1:7003
+   slots: (0 slots) slave
+   replicates 272240c7de4759a09b16de13a4fdc01d0f3895b2
+S: 39ca94fb21c28c64bba3de354a09fd3a877b94bf 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 55133904c943a306b0039c275c00aaceffb013d1
+S: ea2457e244d9faa50489b8bbec54e511eef6f071 127.0.0.1:7007
+   slots: (0 slots) slave
+   replicates cbcf3bf7695c9491bba8890bea9d9ff319708954
+M: cbcf3bf7695c9491bba8890bea9d9ff319708954 127.0.0.1:7006
+   slots: (0 slots) master
+   1 additional replica(s)
+M: 55133904c943a306b0039c275c00aaceffb013d1 127.0.0.1:7002
+   slots:[10923-16383] (5461 slots) master
+   1 additional replica(s)
+S: 6d48e67ce3376de7bb0f39c6e503ffd23aa1e240 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d
+M: 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d 127.0.0.1:7001
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+How many slots do you want to move (from 1 to 16384)? 4096
+What is the receiving node ID?
+What is the receiving node ID? cbcf3bf7695c9491bba8890bea9d9ff319708954
+
+
+Finally we need to enter the IDs of the shards we want to copy data from, Alternatively we can type "all" and the shard will move number of hash slots from all available primary shards.
+
+ redis-cli -p 7000 --cluster reshard 127.0.0.1:7000
+>>> Performing Cluster Check (using node 127.0.0.1:7000)
+M: 272240c7de4759a09b16de13a4fdc01d0f3895b2 127.0.0.1:7000
+   slots:[0-5460] (5461 slots) master
+   1 additional replica(s)
+S: fb70544978be4b5d55b4722667725488386cb065 127.0.0.1:7003
+   slots: (0 slots) slave
+   replicates 272240c7de4759a09b16de13a4fdc01d0f3895b2
+S: 39ca94fb21c28c64bba3de354a09fd3a877b94bf 127.0.0.1:7005
+   slots: (0 slots) slave
+   replicates 55133904c943a306b0039c275c00aaceffb013d1
+S: ea2457e244d9faa50489b8bbec54e511eef6f071 127.0.0.1:7007
+   slots: (0 slots) slave
+   replicates cbcf3bf7695c9491bba8890bea9d9ff319708954
+M: cbcf3bf7695c9491bba8890bea9d9ff319708954 127.0.0.1:7006
+   slots: (0 slots) master
+   1 additional replica(s)
+M: 55133904c943a306b0039c275c00aaceffb013d1 127.0.0.1:7002
+   slots:[10923-16383] (5461 slots) master
+   1 additional replica(s)
+S: 6d48e67ce3376de7bb0f39c6e503ffd23aa1e240 127.0.0.1:7004
+   slots: (0 slots) slave
+   replicates 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d
+M: 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d 127.0.0.1:7001
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+How many slots do you want to move (from 1 to 16384)? 4096
+What is the receiving node ID?
+What is the receiving node ID? cbcf3bf7695c9491bba8890bea9d9ff319708954
+Please enter all the source node IDs.
+  Type 'all' to use all the nodes as source nodes for the hash slots.
+  Type 'done' once you entered all the source nodes IDs.
+Source node #1: all
+
+Ready to move 4096 slots.
+  Source nodes:
+    M: 272240c7de4759a09b16de13a4fdc01d0f3895b2 127.0.0.1:7000
+       slots:[0-5460] (5461 slots) master
+       1 additional replica(s)
+    M: 55133904c943a306b0039c275c00aaceffb013d1 127.0.0.1:7002
+       slots:[10923-16383] (5461 slots) master
+       1 additional replica(s)
+    M: 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d 127.0.0.1:7001
+       slots:[5461-10922] (5462 slots) master
+       1 additional replica(s)
+  Destination node:
+    M: cbcf3bf7695c9491bba8890bea9d9ff319708954 127.0.0.1:7006
+       slots: (0 slots) master
+       1 additional replica(s)
+  Resharding plan:
+    Moving slot 5461 from 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d
+    Moving slot 5462 from 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d
+    Moving slot 5463 from 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d
+    Moving slot 5464 from 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d
+    Moving slot 5465 from 187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d
+    Moving slot 12286 from 55133904c943a306b0039c275c00aaceffb013d1
+    Moving slot 12287 from 55133904c943a306b0039c275c00aaceffb013d1
+   Do you want to proceed with the proposed reshard plan (yes/no)?
+...................................................................................
+
+cluster slots
+1) 1) (integer) 0
+   2) (integer) 1364
+   3) 1) "127.0.0.1"
+      2) (integer) 7006
+      3) "cbcf3bf7695c9491bba8890bea9d9ff319708954"
+      4) (empty array)
+   4) 1) "127.0.0.1"
+      2) (integer) 7007
+      3) "ea2457e244d9faa50489b8bbec54e511eef6f071"
+      4) (empty array)
+2) 1) (integer) 1365
+   2) (integer) 5460
+   3) 1) "127.0.0.1"
+      2) (integer) 7000
+      3) "272240c7de4759a09b16de13a4fdc01d0f3895b2"
+      4) (empty array)
+   4) 1) "127.0.0.1"
+      2) (integer) 7003
+      3) "fb70544978be4b5d55b4722667725488386cb065"
+      4) (empty array)
+3) 1) (integer) 5461
+   2) (integer) 6826
+   3) 1) "127.0.0.1"
+      2) (integer) 7006
+      3) "cbcf3bf7695c9491bba8890bea9d9ff319708954"
+      4) (empty array)
+   4) 1) "127.0.0.1"
+      2) (integer) 7007
+      3) "ea2457e244d9faa50489b8bbec54e511eef6f071"
+      4) (empty array)
+4) 1) (integer) 6827
+   2) (integer) 10922
+   3) 1) "127.0.0.1"
+      2) (integer) 7001
+      3) "187ed5d4bde7ea793048de2a94a2a77ef1fe1f9d"
+      4) (empty array)
+   4) 1) "127.0.0.1"
+      2) (integer) 7004
+      3) "6d48e67ce3376de7bb0f39c6e503ffd23aa1e240"
+      4) (empty array)
+5) 1) (integer) 10923
+   2) (integer) 12287
+   3) 1) "127.0.0.1"
+      2) (integer) 7006
+      3) "cbcf3bf7695c9491bba8890bea9d9ff319708954"
+      4) (empty array)
+   4) 1) "127.0.0.1"
+      2) (integer) 7007
+      3) "ea2457e244d9faa50489b8bbec54e511eef6f071"
+      4) (empty array)
+6) 1) (integer) 12288
+   2) (integer) 16383
+   3) 1) "127.0.0.1"
+      2) (integer) 7002
+      3) "55133904c943a306b0039c275c00aaceffb013d1"
+      4) (empty array)
+   4) 1) "127.0.0.1"
+      2) (integer) 7005
+      3) "39ca94fb21c28c64bba3de354a09fd3a877b94bf"
+      4) (empty array)
+.....................................................................................
+			  create-cluster script
+
+Steps:
+subugee@LAPTOP-R2TGGFDL:~/redis-session/redis-stable$ ./utils/create-cluster/create-cluster  start
+
+subugee@LAPTOP-R2TGGFDL:~/redis-session/redis-stable$ ./utils/create-cluster/create-cluster  create-cluster
+
+connect to cluster node watch how
+redis-cli -c -p 30001
+127.0.0.1:30001> cluster info
+cluster_state:ok
+cluster_slots_assigned:16384
+cluster_slots_ok:16384
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6
+cluster_size:3
+cluster_current_epoch:6
+cluster_my_epoch:1
+cluster_stats_messages_ping_sent:91
+cluster_stats_messages_pong_sent:93
+cluster_stats_messages_sent:184
+cluster_stats_messages_ping_received:88
+cluster_stats_messages_pong_received:91
+cluster_stats_messages_meet_received:5
+cluster_stats_messages_received:184
+total_cluster_links_buffer_limit_exceeded:0
+127.0.0.1:30001> set a 100
+-> Redirected to slot [15495] located at 127.0.0.1:30003
+OK
+127.0.0.1:30003> set b 100
+-> Redirected to slot [3300] located at 127.0.0.1:30001
+OK
+127.0.0.1:30001> set b 100
+OK
+127.0.0.1:30001> set c 100
+-> Redirected to slot [7365] located at 127.0.0.1:30002
+OK
+127.0.0.1:30002>
+
+The remaining tasks are same for creating node, add node...
+
+if you want to stop , 
+subugee@LAPTOP-R2TGGFDL:~/redis-session/redis-stable$ ./utils/create-cluster/create-cluster  stop
+
+...
+
+Cluster check command 
+
+redis-cli --cluster check 127.0.0.1:30002
+127.0.0.1:30002 (e537b500...) -> 0 keys | 3413 slots | 1 slaves.
+127.0.0.1:30003 (445ec542...) -> 2 keys | 9557 slots | 1 slaves.
+127.0.0.1:30001 (1de50f18...) -> 1 keys | 3414 slots | 1 slaves.
+[OK] 3 keys in 3 masters.
+0.00 keys per slot on average.
+>>> Performing Cluster Check (using node 127.0.0.1:30002)
+M: e537b5005fc90a5087dec4b9f60f4fc170862f0e 127.0.0.1:30002
+   slots:[7510-10922] (3413 slots) master
+   1 additional replica(s)
+M: 445ec54291c371e97d07e0a6b942a7711790682b 127.0.0.1:30003
+   slots:[0-2046],[5461-7509],[10923-16383] (9557 slots) master
+   1 additional replica(s)
+S: 18c4111280d80c282be40fefc2b127325d465e56 127.0.0.1:30004
+   slots: (0 slots) slave
+   replicates 445ec54291c371e97d07e0a6b942a7711790682b
+S: 0c9774751bf10337db6c39906de102b9ecbfe8d9 127.0.0.1:30006
+   slots: (0 slots) slave
+   replicates e537b5005fc90a5087dec4b9f60f4fc170862f0e
+S: 8ea3b14a60e6c0b646d6c6c76d8c2f1ecbc03558 127.0.0.1:30005
+   slots: (0 slots) slave
+   replicates 1de50f18081bdd1245177b8fa8fadd0d143b90fe
+M: 1de50f18081bdd1245177b8fa8fadd0d143b90fe 127.0.0.1:30001
+   slots:[2047-5460] (3414 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+
+.................................................................................
+
+To filter the masters:
+subugee@LAPTOP-R2TGGFDL:~$ redis-cli -p 30001 cluster nodes | grep master
+1de50f18081bdd1245177b8fa8fadd0d143b90fe 127.0.0.1:30001@40001 myself,master - 0 1683725683000 1 connected 2047-5460
+445ec54291c371e97d07e0a6b942a7711790682b 127.0.0.1:30003@40003 master - 0 1683725683114 7 connected 0-2046 5461-7509 10923-16383
+e537b5005fc90a5087dec4b9f60f4fc170862f0e 127.0.0.1:30002@40002 master - 0 1683725683517 2 connected 7510-10922
+..................................................................................
+Test fail over:
+f9a3da7f45a53cec7466bac31098e75e27cf1f68
+
