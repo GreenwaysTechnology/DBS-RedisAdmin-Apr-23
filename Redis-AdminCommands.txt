@@ -1,0 +1,276 @@
+			   Server admin commands
+....................................................................................
+
+info command:
+ It returns information and statics about the server in a format 
+
+info section
+
+client list:
+https://redis.io/commands/client-getname/
+
+client list
+id=3 addr=127.0.0.1:57964 laddr=127.0.0.1:6379 fd=8 name= age=357 idle=350 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 qbuf=0 qbuf-free=0 argv-mem=0 multi-mem=0 rbs=1024 rbp=0 obl=0 oll=0 omem=0 tot-mem=1800 events=r cmd=set user=default redir=-1 resp=2
+id=4 addr=127.0.0.1:58058 laddr=127.0.0.1:6379 fd=9 name= age=345 idle=0 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 qbuf=26 qbuf-free=20448 argv-mem=10 multi-mem=0 rbs=1024 rbp=0 obl=0 oll=0 omem=0 tot-mem=22298 events=r cmd=client|list user=default redir=-1 resp=2
+id=5 addr=127.0.0.1:59030 laddr=127.0.0.1:6379 fd=10 name= age=219 idle=214 flags=N db=0 sub=0 psub=0 ssub=0 multi=-1 qbuf=0 qbuf-free=0 argv-mem=0 multi-mem=0 rbs=1024 rbp=0 obl=0 oll=0 omem=0 tot-mem=1800 events=r cmd=set user=default redir=-1 resp=2
+
+Transactions:
+
+
+MULTI
+ INCR a
+ INCR a
+EXEC or Discard
+
+eg:
+127.0.0.1:6379> MULTI
+OK
+127.0.0.1:6379(TX)> INCR a
+QUEUED
+127.0.0.1:6379(TX)> INCR a
+QUEUED
+127.0.0.1:6379(TX)> INCR a
+QUEUED
+127.0.0.1:6379(TX)> INCR a
+QUEUED
+127.0.0.1:6379(TX)> EXEC
+1) (integer) 101
+2) (integer) 102
+3) (integer) 103
+4) (integer) 104
+127.0.0.1:6379> MULTI
+OK
+127.0.0.1:6379(TX)> INCR a
+QUEUED
+127.0.0.1:6379(TX)> INCR a
+QUEUED
+127.0.0.1:6379(TX)> DISCARD
+OK
+127.0.0.1:6379> GET a
+"104"
+
+Locks:
+ In redis, by design keys are locked during update/remove process, you dont need to lock them, because redis uses non blocking single event loop thread.
+Each operation is atomic.
+Other clients are blocked during the processing of given command.
+
+config command:
+ Chaning server properties during server running.
+
+ config set parameter parameter - to override existing configuration value
+
+ config get parameter -  to know the current configuration value
+....................................................................................
+Slow Log : Monitoring Slow Redis Calls:
+
+inspect slow queries
+Redis provides us with monitor feature which let us inspect slow queries. Slowlog will log last X amount queries which took more time than Y microseconds to run. You can set this either in redis.conf or at runtime using CONFIG command
+CONFIG SET slowlog-log-slower-than 5000
+CONFIG SET slowlog-max-len 50
+
+The slowlog-log-slower-than specified above is specified in microseconds, that means it will log all the queries taking time above 5 ms
+
+To Retrieve the slowlog queries, you have to use SLOWLOG GET X. Where X is the number of slow queries you want to retrieve.
+SLOWLOG GET 50
+Result will display a unique id, timestamp, time taken to execute the query in microseconds, and the actual command + parameter executed.
+1) 1) (integer) 0        ## unique id
+2) (integer) 1491042367  ## timestamp
+3) (integer) 11498       ## time taken
+4) 1) "KEYS"            ## command
+   2) 'r:usr:*'         ## command paramter
+   3) “0”
+
+eg:
+127.0.0.1:6379> CONFIG SET slowlog-log-slower-than 1
+OK
+127.0.0.1:6379> HSET user username "subramanian" email "admin" city "coimbatore"
+(integer) 3
+127.0.0.1:6379> HGETALL user
+1) "username"
+2) "subramanian"
+3) "email"
+4) "admin"
+5) "city"
+6) "coimbatore"
+127.0.0.1:6379> SLOWLOG get
+1) 1) (integer) 2
+   2) (integer) 1683814621
+   3) (integer) 6
+   4) 1) "HGETALL"
+      2) "user"
+   5) "127.0.0.1:58058"
+   6) ""
+2) 1) (integer) 1
+   2) (integer) 1683814613
+   3) (integer) 21
+   4) 1) "HSET"
+      2) "user"
+      3) "username"
+      4) "subramanian"
+      5) "email"
+      6) "admin"
+      7) "city"
+      8) "coimbatore"
+   5) "127.0.0.1:58058"
+   6) ""
+3) 1) (integer) 0
+   2) (integer) 1683814582
+   3) (integer) 7
+   4) 1) "CONFIG"
+      2) "SET"
+      3) "slowlog-log-slower-than"
+      4) "1"
+   5) "127.0.0.1:58058"
+   6) ""
+
+Each entry from the slow log is comprised of the following six values:
+
+1.A unique progressive identifier for every slow log entry.
+2.The unix timestamp at which the logged command was processed.
+3.The amount of time needed for its execution, in microseconds.
+4.The array composing the arguments of the command.
+5.Client IP address and port.6
+6.Client name if set via the CLIENT SETNAME command.
+.....................................................................................
+				Memory Usage
+
+MEMORY USAGE key
+The MEMORY USAGE command reports the number of bytes that a key and its value require to be stored in RAM.
+The reported usage is the total of memory allocations for data and administrative overheads that a key its value require.
+
+> SET foo bar
+OK
+> MEMORY USAGE foo
+(integer) 54
+> SET cento 01234567890123456789012345678901234567890123
+45678901234567890123456789012345678901234567890123456789
+OK
+127.0.0.1:6379> MEMORY USAGE cento
+(integer) 153
+,..................................................................................
+				MEMORY STATS
+
+MEMORY STATS
+The MEMORY STATS command returns an Array reply about the memory usage of the server.
+
+The information about memory usage is provided as metrics and their respective values. The following metrics are reported:
+
+peak.allocated: Peak memory consumed by Redis in bytes (see INFO's used_memory_peak)
+total.allocated: Total number of bytes allocated by Redis using its allocator (see INFO's used_memory)
+startup.allocated: Initial amount of memory consumed by Redis at startup in bytes (see INFO's used_memory_startup)
+replication.backlog: Size in bytes of the replication backlog (see INFO's repl_backlog_active)
+clients.slaves: The total size in bytes of all replicas overheads (output and query buffers, connection contexts)
+clients.normal: The total size in bytes of all clients overheads (output and query buffers, connection contexts)
+cluster.links: Memory usage by cluster links (Added in Redis 7.0, see INFO's mem_cluster_links).
+aof.buffer: The summed size in bytes of AOF related buffers.
+lua.caches: the summed size in bytes of the overheads of the Lua scripts' caches
+dbXXX: For each of the server's databases, the overheads of the main and expiry dictionaries (overhead.hashtable.main and overhead.hashtable.expires, respectively) are reported in bytes
+overhead.total: The sum of all overheads, i.e. startup.allocated, replication.backlog, clients.slaves, clients.normal, aof.buffer and those of the internal data structures that are used in managing the Redis keyspace (see INFO's used_memory_overhead)
+keys.count: The total number of keys stored across all databases in the server
+keys.bytes-per-key: The ratio between net memory usage (total.allocated minus startup.allocated) and keys.count
+dataset.bytes: The size in bytes of the dataset, i.e. overhead.total subtracted from total.allocated (see INFO's used_memory_dataset)
+dataset.percentage: The percentage of dataset.bytes out of the net memory usage
+peak.percentage: The percentage of peak.allocated out of total.allocated
+fragmentation: See INFO's mem_fragmentation_ratio
+....................................................................................
+				Security
+..................................................................................
+ACL :
+
+
+1.Redis has been designed to be accessed by trusted clients inside trusted envs.
+  - It is not good idea to expose the redis instance directly to the internet or to an env
+    Where untrusted clients can directly access the Redis TCP PORT or Unix socket.
+ 
+In general web applications will talk to redis for storing data, there is high possiblity
+via application hacker may enter into redis.
+
+How to stop that?
+ Redis recommands to implement ACL- ACCESS CONTROL List , through which you can validate
+user, what operation he can perform against redis instance.
+
+In the old redis , there is no auth mode, only password protected, in Redis 6 on wards, Multi user and passwords been introduced.
+
+With ACL you can create multiple users and specify login passwords, and the keys and commands they are allowed to use for each.
+
+
+=>From the applications/libs calling "KEYS" command on a production server.
+=>preventing administrators from calling "FLUSHALL" by mistake.
+=>Designating a key prefix for senstive information that only some users can access.
+
+How to disable danagerous commands
+like flush db, flushall, config
+
+redis.conf
+
+rename-command commandName newCommand
+
+rename-command  flushdb   b888adfdsafdsafkk8888
+
+127.0.0.1:6379> flushdb
+(error) ERR unknown command `flushdb`, with args beginning with:
+127.0.0.1:6379>
+....................................................................................
+
+In old redis versions the passed is configured using a directive called "requirepass".
+
+Lab:
+
+open redis.conf file
+
+requirepass foo
+
+try to connect redis cli with out pass
+
+src/redis-cli
+ubuntu@ip-172-31-16-143:~/myredislab/redis-6.2.1$ src/redis-cli
+127.0.0.1:6379> ping
+(error) NOAUTH Authentication required.
+
+how to connect with password?
+ubuntu@ip-172-31-16-143:~/myredislab/redis-6.2.1$ src/redis-cli -a foo
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+127.0.0.1:6379> ping
+PONG
+
+or
+After connecting
+
+redis-cli
+127.0.0.1:6379> set b 10
+(error) NOAUTH Authentication required.
+127.0.0.1:6379> auth admin
+OK
+127.0.0.1:6379> set b 13
+OK
+127.0.0.1:6379> set c 100
+OK
+127.0.0.1:6379>
+...................................................................................
+
+In off status, that is, it's disabled. AUTH will not work.
+The user also has no passwords set.
+Cannot access any command. Note that the user is created by default without the ability to access any command, so the -@all in the output above could be omitted, however ACL LIST attempts to be explicit rather than implicit.
+There are no key patterns that the user can access.
+The user can access all Pub/Sub channels.
+
+127.0.0.1:6379> ACL SETUSER alice on >mypass ~cached:* +get
+OK
+1
+> AUTH alice p1pp0
+OK
+> GET foo
+(error) NOPERM this user has no permissions to access one of the keys used as arguments
+> GET cached:1234
+(nil)
+> SET cached:1234 zap
+(error) NOPERM this user has no permissions to run the 'set' command or its subcommand
+///////////////////////////////
+
+127.0.0.1:6379> ACL WHOAMI
+"default"
+1
+
+for rules : refere redis.conf file.
+
+

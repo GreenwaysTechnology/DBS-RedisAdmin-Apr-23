@@ -1,0 +1,46 @@
+sudo apt update -y
+sudo apt install build-essential tcl -y
+sudo apt install tcl-tls libssl-dev -y
+sudo adduser --system --group  -no-create-home redis
+sudo mkdir  /var/lib/redis
+sudo chown redis:redis /var/lib/redis
+sudo chmod 770 /var/lib/redis
+sudo mkdir  /var/log/redis 
+sudo touch /var/log/redis/redis.log
+sudo chmod 660  /var/log/redis
+sudo chmod 660  /var/log/redis/redis.log
+
+cd tmp/
+tmp/ wget http://download.redis.io/releases/redis-7.0.11.tar.gz
+
+subugee@LAPTOP-R2TGGFDL:/tmp$ ls
+redis-7.0.11.tar.gz
+
+tar -xzvf redis-7.0.11.tar.gz
+
+verify the integrity using "sha256sum" aginst this web site
+
+https://github.com/redis/redis-hashes
+
+sha256sum redis-7.0.11.tar.gz
+ce250d1fba042c613de38a15d40889b78f7cb6d5461a27e35017ba39b07221e3  redis-7.0.11.tar.gz
+
+if it matches the no given by this command and github no, then this is orginial distribution.
+
+cd tmp/redis-7.0.11$
+
+sudo make BUILD_TLS=yes install 
+
+sudo mkdir /etc/redis
+sudo cp redis.conf /etc/redis
+
+sudo chown -R redis:redis /etc/redis
+
+sudo chmod 640 /etc/redis/redis.conf
+
+sudo runuser -u redis /usr/local/bin/redis-server /etc/redis/redis.conf &
+
+if want to install redis tools like redis-cli
+
+sudo apt install redis-tools -y
+

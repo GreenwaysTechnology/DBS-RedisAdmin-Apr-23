@@ -1,0 +1,195 @@
+./utils/create-cluster/create-cluster start
+Starting 30001
+Starting 30002
+Starting 30003
+Starting 30004
+Starting 30005
+Starting 30006
+Starting 30007
+Starting 30008
+Starting 30009
+Starting 30010
+Starting 30011
+Starting 30012
+subugee@LAPTOP-R2TGGFDL:~/redis-session/redis-stable$ ./utils/create-cluster/create-cluster create
+>>> Performing hash slots allocation on 12 nodes...
+Master[0] -> Slots 0 - 4095
+Master[1] -> Slots 4096 - 8191
+Master[2] -> Slots 8192 - 12287
+Master[3] -> Slots 12288 - 16383
+Adding replica 127.0.0.1:30006 to 127.0.0.1:30001
+Adding replica 127.0.0.1:30007 to 127.0.0.1:30001
+Adding replica 127.0.0.1:30008 to 127.0.0.1:30002
+Adding replica 127.0.0.1:30009 to 127.0.0.1:30002
+Adding replica 127.0.0.1:30010 to 127.0.0.1:30003
+Adding replica 127.0.0.1:30011 to 127.0.0.1:30003
+Adding replica 127.0.0.1:30012 to 127.0.0.1:30004
+Adding replica 127.0.0.1:30005 to 127.0.0.1:30004
+>>> Trying to optimize slaves allocation for anti-affinity
+[WARNING] Some slaves are in the same host as their master
+M: 9da57973939b2f8392b55486151f2017751ba101 127.0.0.1:30001
+   slots:[0-4095] (4096 slots) master
+M: 7de9cc78a061fcae5d5498c45dc92d96f113ea21 127.0.0.1:30002
+   slots:[4096-8191] (4096 slots) master
+M: 8bd5167487a2849cc71fbdf76f4d7146717a61ce 127.0.0.1:30003
+   slots:[8192-12287] (4096 slots) master
+M: 2dbc20a0719ce42f8156384930e016f594c36cc7 127.0.0.1:30004
+   slots:[12288-16383] (4096 slots) master
+S: c08fd6f8fff557b14bd4a1f2ddaf77826a7a03ee 127.0.0.1:30005
+   replicates 2dbc20a0719ce42f8156384930e016f594c36cc7
+S: 8f13c06bbccd9c3778fd083d3553b3c57137df05 127.0.0.1:30006
+   replicates 9da57973939b2f8392b55486151f2017751ba101
+S: 7a99237914bdef391f90239afb9d080dabe7c604 127.0.0.1:30007
+   replicates 7de9cc78a061fcae5d5498c45dc92d96f113ea21
+S: cfc3357d8dc79230f344498ac7082eec04739564 127.0.0.1:30008
+   replicates 9da57973939b2f8392b55486151f2017751ba101
+S: b0d31d9f109d1bd6fff0591cf7d20493aa73a1e3 127.0.0.1:30009
+   replicates 7de9cc78a061fcae5d5498c45dc92d96f113ea21
+S: a99349dce5b4bb3635aa26de27780b6ea8d17e74 127.0.0.1:30010
+   replicates 2dbc20a0719ce42f8156384930e016f594c36cc7
+S: 0a76e1cff967d4fd2beb2df3e9333ee8e4e6d7aa 127.0.0.1:30011
+   replicates 8bd5167487a2849cc71fbdf76f4d7146717a61ce
+S: 641ab7c7ec7f557e7f9d625213b9f360cff3a2aa 127.0.0.1:30012
+   replicates 8bd5167487a2849cc71fbdf76f4d7146717a61ce
+Can I set the above configuration? (type 'yes' to accept): yes
+>>> Nodes configuration updated
+>>> Assign a different config epoch to each node
+>>> Sending CLUSTER MEET messages to join the cluster
+Waiting for the cluster to join
+.
+>>> Performing Cluster Check (using node 127.0.0.1:30001)
+M: 9da57973939b2f8392b55486151f2017751ba101 127.0.0.1:30001
+   slots:[0-4095] (4096 slots) master
+   2 additional replica(s)
+S: 641ab7c7ec7f557e7f9d625213b9f360cff3a2aa 127.0.0.1:30012
+   slots: (0 slots) slave
+   replicates 8bd5167487a2849cc71fbdf76f4d7146717a61ce
+M: 2dbc20a0719ce42f8156384930e016f594c36cc7 127.0.0.1:30004
+   slots:[12288-16383] (4096 slots) master
+   2 additional replica(s)
+M: 7de9cc78a061fcae5d5498c45dc92d96f113ea21 127.0.0.1:30002
+   slots:[4096-8191] (4096 slots) master
+   2 additional replica(s)
+S: 8f13c06bbccd9c3778fd083d3553b3c57137df05 127.0.0.1:30006
+   slots: (0 slots) slave
+   replicates 9da57973939b2f8392b55486151f2017751ba101
+S: 0a76e1cff967d4fd2beb2df3e9333ee8e4e6d7aa 127.0.0.1:30011
+   slots: (0 slots) slave
+   replicates 8bd5167487a2849cc71fbdf76f4d7146717a61ce
+S: 7a99237914bdef391f90239afb9d080dabe7c604 127.0.0.1:30007
+   slots: (0 slots) slave
+   replicates 7de9cc78a061fcae5d5498c45dc92d96f113ea21
+S: a99349dce5b4bb3635aa26de27780b6ea8d17e74 127.0.0.1:30010
+   slots: (0 slots) slave
+   replicates 2dbc20a0719ce42f8156384930e016f594c36cc7
+M: 8bd5167487a2849cc71fbdf76f4d7146717a61ce 127.0.0.1:30003
+   slots:[8192-12287] (4096 slots) master
+   2 additional replica(s)
+S: cfc3357d8dc79230f344498ac7082eec04739564 127.0.0.1:30008
+   slots: (0 slots) slave
+   replicates 9da57973939b2f8392b55486151f2017751ba101
+S: b0d31d9f109d1bd6fff0591cf7d20493aa73a1e3 127.0.0.1:30009
+   slots: (0 slots) slave
+   replicates 7de9cc78a061fcae5d5498c45dc92d96f113ea21
+S: c08fd6f8fff557b14bd4a1f2ddaf77826a7a03ee 127.0.0.1:30005
+   slots: (0 slots) slave
+   replicates 2dbc20a0719ce42f8156384930e016f594c36cc7
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+
+27.0.0.1:30001> set foo bar
+-> Redirected to slot [12182] located at 127.0.0.1:30003
+OK
+127.0.0.1:30003> set hello world
+-> Redirected to slot [866] located at 127.0.0.1:30001
+OK
+127.0.0.1:30001>
+
+resharding:
+redis-cli --cluster reshard 127.0.0.1:30001
+
+Knows who am i:
+redis-cli -p 30001 cluster nodes | grep myself
+9da57973939b2f8392b55486151f2017751ba101 127.0.0.1:30001@40001 myself,master - 0 1683728666000 13 connected 0-4428 8192-8524 12288-12621
+subugee@LAPTOP-R2TGGFDL:~/redis-session/redis-stable$ redis-cli -p 30002 cluster nodes | grep myself
+7de9cc78a061fcae5d5498c45dc92d96f113ea21 127.0.0.1:30002@40002 myself,master - 0 1683728676000 2 connected 4429-8191
+subugee@LAPTOP-R2TGGFDL:~/redis-session/redis-stable$ redis-cli -p 30003 cluster nodes | grep myself
+8bd5167487a2849cc71fbdf76f4d7146717a61ce 127.0.0.1:30003@40003 myself,master - 0 1683728682000 3 connected 8525-12287
+subugee@LAPTOP-R2TGGFDL:~/redis-session/redis-stable$ redis-cli -p 30004 cluster nodes | grep myself
+2dbc20a0719ce42f8156384930e016f594c36cc7 127.0.0.1:30004@40004 myself,master - 0 1683728687000 4 connected 12622-16383
+subugee@LAPTOP-R2TGGFDL:~/redis-session/redis-stable$ redis-cli -p 30005 cluster nodes | grep myself
+c08fd6f8fff557b14bd4a1f2ddaf77826a7a03ee 127.0.0.1:30005@40005 myself,slave 2dbc20a0719ce42f8156384930e016f594c36cc7 0 1683728692000 4 connected
+subugee@LAPTOP-R2TGGFDL:~/redis-session/redis-stable$ redis-cli -p 30006 cluster nodes | grep myself
+8f13c06bbccd9c3778fd083d3553b3c57137df05 127.0.0.1:30006@40006 myself,slave 9da57973939b2f8392b55486151f2017751ba101 0 1683728697000 13 connected
+subugee@LAPTOP-R2TGGFDL:~/redis-session/redis-stable$ redis-cli -p 30007 cluster nodes | grep myself
+7a99237914bdef391f90239afb9d080dabe7c604 127.0.0.1:30007@40007 myself,slave 7de9cc78a061fcae5d5498c45dc92d96f113ea21 0 1683728705000 2 connected
+
+To know the Health of cluster:
+
+redis-cli --cluster check 127.0.0.1:30001
+127.0.0.1:30001 (9da57973...) -> 1 keys | 5096 slots | 2 slaves.
+127.0.0.1:30004 (2dbc20a0...) -> 0 keys | 3762 slots | 2 slaves.
+127.0.0.1:30002 (7de9cc78...) -> 0 keys | 3763 slots | 2 slaves.
+127.0.0.1:30003 (8bd51674...) -> 1 keys | 3763 slots | 2 slaves.
+[OK] 2 keys in 4 masters.
+0.00 keys per slot on average.
+>>> Performing Cluster Check (using node 127.0.0.1:30001)
+M: 9da57973939b2f8392b55486151f2017751ba101 127.0.0.1:30001
+   slots:[0-4428],[8192-8524],[12288-12621] (5096 slots) master
+   2 additional replica(s)
+S: 641ab7c7ec7f557e7f9d625213b9f360cff3a2aa 127.0.0.1:30012
+   slots: (0 slots) slave
+   replicates 8bd5167487a2849cc71fbdf76f4d7146717a61ce
+M: 2dbc20a0719ce42f8156384930e016f594c36cc7 127.0.0.1:30004
+   slots:[12622-16383] (3762 slots) master
+   2 additional replica(s)
+M: 7de9cc78a061fcae5d5498c45dc92d96f113ea21 127.0.0.1:30002
+   slots:[4429-8191] (3763 slots) master
+   2 additional replica(s)
+S: 8f13c06bbccd9c3778fd083d3553b3c57137df05 127.0.0.1:30006
+   slots: (0 slots) slave
+   replicates 9da57973939b2f8392b55486151f2017751ba101
+S: 0a76e1cff967d4fd2beb2df3e9333ee8e4e6d7aa 127.0.0.1:30011
+   slots: (0 slots) slave
+   replicates 8bd5167487a2849cc71fbdf76f4d7146717a61ce
+S: 7a99237914bdef391f90239afb9d080dabe7c604 127.0.0.1:30007
+   slots: (0 slots) slave
+   replicates 7de9cc78a061fcae5d5498c45dc92d96f113ea21
+S: a99349dce5b4bb3635aa26de27780b6ea8d17e74 127.0.0.1:30010
+   slots: (0 slots) slave
+   replicates 2dbc20a0719ce42f8156384930e016f594c36cc7
+M: 8bd5167487a2849cc71fbdf76f4d7146717a61ce 127.0.0.1:30003
+   slots:[8525-12287] (3763 slots) master
+   2 additional replica(s)
+S: cfc3357d8dc79230f344498ac7082eec04739564 127.0.0.1:30008
+   slots: (0 slots) slave
+   replicates 9da57973939b2f8392b55486151f2017751ba101
+S: b0d31d9f109d1bd6fff0591cf7d20493aa73a1e3 127.0.0.1:30009
+   slots: (0 slots) slave
+   replicates 7de9cc78a061fcae5d5498c45dc92d96f113ea21
+S: c08fd6f8fff557b14bd4a1f2ddaf77826a7a03ee 127.0.0.1:30005
+   slots: (0 slots) slave
+   replicates 2dbc20a0719ce42f8156384930e016f594c36cc7
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+
+How to reshard automatically without manual resharding?
+
+redis-cli --cluster reshard 127.0.0.1:30001 --cluster-from 9da57973939b2f8392b55486151f2017751ba101 --cluster-to   2dbc20a0719ce42f8156384930e016f594c36cc7
+[OK] All 16384 slots covered.
+How many slots do you want to move (from 1 to 16384)? 1000
+.....................................................................................
+
+
+
+
+
+
+
+
+
+
